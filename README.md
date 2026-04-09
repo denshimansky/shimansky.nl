@@ -83,3 +83,5 @@ ssh root@89.19.212.181 "tar xzf /tmp/shim-nl.tar.gz -C /opt/shimansky.nl && \
 - LinkedIn: https://www.linkedin.com/in/pavel-shimansky/
 - Telegram: @shimansky
 - Instagram: @p_shimansky
+
+<!-- auto-deploy test 1775713567 -->
