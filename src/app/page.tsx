@@ -8,7 +8,6 @@ type Theme = "dark" | "light";
 const COMPANY_URLS: Record<string, string> = {
   "KYOCERA Document Solutions Europe": "https://www.kyoceradocumentsolutions.eu/",
   Generium: "https://generium.ru/en/",
-  Medinvestgroup: "https://medinvestgroup.ru/",
   Mosinzhproekt: "https://mosinzhproekt.ru/en/",
   Мосинжпроект: "https://mosinzhproekt.ru/en/",
 };
@@ -112,7 +111,7 @@ const dict = {
       },
     ],
     certifications: [
-      "Financial Modeling & Valuation Analyst",
+      "Financial Modeling & Valuation Analyst (FMVA®)",
       "CFA Level I (Feb 2022)",
     ],
     certificationsLabel: "Certifications",
@@ -215,7 +214,7 @@ const dict = {
       },
     ],
     certifications: [
-      "Financial Modeling & Valuation Analyst",
+      "Financial Modeling & Valuation Analyst (FMVA®)",
       "CFA Level I (февраль 2022)",
     ],
     certificationsLabel: "Сертификаты",
@@ -318,12 +317,19 @@ const dict = {
       },
     ],
     certifications: [
-      "Financial Modeling & Valuation Analyst",
+      "Financial Modeling & Valuation Analyst (FMVA®)",
       "CFA Level I (feb 2022)",
     ],
     certificationsLabel: "Certificeringen",
   },
 } as const;
+
+function highlightMetrics(text: string): string {
+  return text.replace(
+    /(\$\d+(?:[.,]\d+)*[MKB]?(?:\+)?(?:\s*[–—-]\s*\$?\d+(?:[.,]\d+)*[MKB]?(?:\+)?)?|[−\u2212-]\d+(?:[.,]\d+)*%|\b\d+(?:[.,]\d+)*%)/g,
+    '<span class="font-semibold text-orange-600 dark:text-orange-300">$1</span>',
+  );
+}
 
 export default function HomePage() {
   const [lang, setLang] = useState<Lang>("en");
@@ -482,7 +488,7 @@ export default function HomePage() {
                         <span className="flex h-[1.625em] items-center shrink-0">
                           <span className="block h-1 w-1 rounded-full bg-orange-500/70" />
                         </span>
-                        <span>{b}</span>
+                        <span dangerouslySetInnerHTML={{ __html: highlightMetrics(b) }} />
                       </li>
                     ))}
                   </ul>
