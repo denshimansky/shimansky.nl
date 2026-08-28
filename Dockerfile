@@ -1,10 +1,10 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 
 # Dependencies
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 
 # Build
 FROM base AS builder
