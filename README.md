@@ -78,6 +78,22 @@ ssh root@89.19.212.181 "tar xzf /tmp/shim-nl.tar.gz -C /opt/shimansky.nl && \
   внутри `sites-enabled/shimansky-nl`. Там же продублированы все 6 заголовков: любой `add_header`
   в `location` отключает наследование с уровня `http`.
 
+### Оценки Goodreads
+
+`src/app/api/goodreads/route.ts` — `GET /api/goodreads?isbn=…` → `{ rating, ratingsCount, url }`
+или `null`, если книги нет в Goodreads. У Goodreads нет публичного API и нет CORS, поэтому
+браузер не может спросить его сам.
+
+- CORS разрешён двум origin: `https://shimansky.nl` и `https://shimapa.github.io` (копия
+  приложения на GitHub Pages ходит на этот же route).
+- nginx менять не нужно — `/api/goodreads` идёт через обычный `location /`.
+- Если Goodreads начнёт отвечать 403/429 (блок по IP датацентра), route вернёт 502, а
+  приложение переключится на запасной публичный прокси. Проверить можно так:
+  `curl -s "https://shimansky.nl/api/goodreads?isbn=9780735211292"` → `"rating":4.31`.
+
+Локальная разработка: из некоторых сетей Goodreads недоступен (запрос виснет), тогда route
+отдаёт 502 с текстом таймаута — это ограничение сети, а не ошибка кода. Проверять на проде.
+
 ### Обновить приложение
 
 ```bash
