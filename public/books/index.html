@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5f0">
+<title>Bookshelf</title>
+<script>
+  // Served as /books (no trailing slash) on hosts that strip it: make relative asset URLs resolve inside the folder.
+  if (!/\/$|\.html$/.test(location.pathname)) document.write('<base href="' + location.pathname + '/">');
+</script>
+<link rel="stylesheet" href="app.css?v=8">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>Bookshelf</h1>
+    <span id="count" class="count"></span>
+  </div>
+  <button id="menuBtn" class="icon-btn" aria-label="Menu">⋯</button>
+  <div id="menu" class="menu" hidden>
+    <button data-action="export">Export backup</button>
+    <button data-action="import">Import backup</button>
+    <button data-action="gkey">Google Books API key…</button>
+    <span class="version">Version 8</span>
+  </div>
+</header>
+
+<div class="tools">
+  <input id="search" type="search" placeholder="Search books" autocomplete="off">
+  <select id="sort" aria-label="Sort">
+    <option value="added">Recently added</option>
+    <option value="title">Title</option>
+    <option value="author">Author</option>
+  </select>
+</div>
+
+<nav id="locations" class="locations" hidden></nav>
+<datalist id="locationList"></datalist>
+
+<main id="list" class="list"></main>
+
+<div id="empty" class="empty" hidden>
+  <p class="empty-title">No books yet</p>
+  <p>Tap <b>Scan</b> and point the camera at the barcode on the back cover.</p>
+</div>
+
+<div class="bar">
+  <form id="isbnForm" class="isbn-form">
+    <input id="isbnInput" inputmode="numeric" placeholder="Type or scan ISBN" autocomplete="off">
+    <button type="submit" class="btn">Add</button>
+  </form>
+  <button id="scanBtn" class="btn primary">Scan</button>
+</div>
+
+<!-- Camera scanner -->
+<div id="scanner" class="scanner" hidden>
+  <video id="video" playsinline muted></video>
+  <div id="scanModes" class="scan-modes">
+    <button type="button" data-mode="barcode">Barcode</button>
+    <button type="button" data-mode="text">ISBN text</button>
+  </div>
+  <div class="frame"></div>
+  <p id="scanHint" class="scan-hint">Point at the barcode</p>
+  <button id="closeScan" class="btn close-scan">Close</button>
+</div>
+
+<!-- Book sheet: confirm new / edit existing -->
+<div id="sheet" class="sheet-wrap" hidden>
+  <form id="bookForm" class="sheet">
+    <div class="sheet-head">
+      <img id="fCoverImg" alt="" hidden>
+      <div class="cover-ph" id="fCoverPh">No cover</div>
+      <div>
+        <p id="sheetNote" class="note"></p>
+        <p class="isbn-line">ISBN <span id="fIsbnText"></span></p>
+        <p id="sheetDetail" class="isbn-line" hidden></p>
+      </div>
+    </div>
+    <label>Title <input name="title" required></label>
+    <label>Author <input name="authors"></label>
+    <div class="row">
+      <label>Publisher <input name="publisher"></label>
+      <label class="short">Year <input name="year" inputmode="numeric"></label>
+    </div>
+    <label>Location <input name="location" list="locationList" placeholder="e.g. Living room, shelf 2" autocomplete="off"></label>
+    <label>Notes <textarea name="notes" rows="2" placeholder="Condition, lent to…"></textarea></label>
+    <div class="sheet-actions">
+      <button type="button" id="deleteBtn" class="btn danger" hidden>Delete</button>
+      <span class="spacer"></span>
+      <button type="button" id="cancelBtn" class="btn">Cancel</button>
+      <button type="submit" id="saveBtn" class="btn primary">Add book</button>
+    </div>
+    <button type="submit" id="saveNextBtn" class="btn wide" value="next">Add &amp; scan next</button>
+  </form>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<input id="importFile" type="file" accept="application/json" hidden>
+
+<script src="app.js?v=8"></script>
+</body>
+</html>
