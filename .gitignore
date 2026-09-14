@@ -1,40 +1,35 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
+
+!.env.example
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
-# next.js
-/.next/
-/out/
-.next
-
-# production
-/build
-
+# IDE
 # debug
+# dependencies
+# env
+# misc
+# next.js
+# production
+# typescript
+*.pem
+*.tsbuildinfo
+.DS_Store
+._*
+.env*
+.idea/
+.next
+.playwright-mcp/
+.pnp.*
+.pnpm-debug.log*
+.vscode/
+.yarn/*
+/.next/
+/.pnp
+/build
+/node_modules
+/out/
+next-env.d.ts
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-
-# env
-.env*
-!.env.example
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# misc
-.DS_Store
-*.pem
-._*
-
-# IDE
-.vscode/
-.idea/
