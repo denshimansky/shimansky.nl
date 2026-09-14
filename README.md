@@ -66,6 +66,29 @@ ssh root@89.19.212.181 "tar xzf /tmp/shim-nl.tar.gz -C /opt/shimansky.nl && \
   docker compose up -d --force-recreate"
 ```
 
+## Bookshelf на /books
+
+Книжный трекер Павла — https://shimansky.nl/books
+
+- Исходник: https://github.com/shimapa/bookshelf (статика, без сборки)
+- Копия трёх файлов лежит в `public/books/`, rewrite `/books` → `/books/index.html` в `next.config.ts`
+- В nginx для `/books` разрешена камера: `Permissions-Policy: camera=(self)`.
+  Заголовок задаётся в общем `/etc/nginx/conf.d/security-headers.conf` (уровень `http`, действует
+  на **все** сайты сервера) — трогать его нельзя. Послабление сделано локально, в двух `location`
+  внутри `sites-enabled/shimansky-nl`. Там же продублированы все 6 заголовков: любой `add_header`
+  в `location` отключает наследование с уровня `http`.
+
+### Обновить приложение
+
+```bash
+./scripts/update-books.sh    # перекачает 3 файла и переприменит патч <base>
+npm run build && npx next start -p 3020   # проверить http://localhost:3020/books в браузере
+git commit -am "update: bookshelf" && git push
+```
+
+Конфиг nginx при обновлениях менять не нужно.
+
+
 ## Что править где
 
 | Что | Файл |
