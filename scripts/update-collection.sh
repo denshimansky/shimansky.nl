@@ -9,7 +9,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-SRC=https://raw.githubusercontent.com/shimapa/bookshelf/main
+SRC=https://shimapa.github.io/bookshelf  # Pages отдаёт свежие файлы; raw.githubusercontent кэширует их до 5 минут
 
 for f in index.html app.css app.js favicon.svg apple-touch-icon.png; do
   curl -fsSL "$SRC/$f" -o "public/collection/$f"
