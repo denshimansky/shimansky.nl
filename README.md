@@ -65,7 +65,7 @@ docker compose up --build
 **ВМ** (Ubuntu 24.04, 2 vCPU / 4 ГБ / 40 ГБ, бэкап раз в неделю):
 - SSH: `ssh -p 2290 pavel@65.108.45.139` — только по ключу, `sudo` без пароля, `docker` без sudo
 - Код: `/opt/shimansky.nl` (владелец `pavel`), контейнер `shimanskynl-app-1` на `127.0.0.1:3020`
-- nginx: `/etc/nginx/sites-available/shimansky-nl` (сайт, `/books`, вебхук, редиректы зеркал),
+- nginx: `/etc/nginx/sites-available/shimansky-nl` (сайт, `/collection`, вебхук, редиректы зеркал),
   заголовки безопасности — `/etc/nginx/conf.d/security-headers.conf`
 - Сертификат Let's Encrypt на 6 имён: certbot на ВМ, продлевается сам
   (проверка HTTP-01 приходит через прокси на autopilot)
@@ -89,26 +89,19 @@ cd /opt/shimansky.nl && git pull && docker compose up -d --build
 
 Книги и винил Павла — https://shimansky.nl/collection
 
-- Исходник: https://github.com/shimapa/bookshelf (статика, без сборки; там же живёт /books)
+- Исходник: https://github.com/shimapa/bookshelf (статика, без сборки)
 - Копия файлов лежит в `public/collection/`, rewrite `/collection` → `/collection/index.html`
   в `next.config.ts`
-- Камера (сканер штрихкодов) требует послабления в nginx на ВМ — как у `/books`:
-  в `sites-available/shimansky-nl` нужен `location /collection` с `Permissions-Policy: camera=(self)`
-  и продублированными остальными пятью заголовками безопасности.
-
-Обновить: `./scripts/update-collection.sh`, затем `git commit -am "update: collection" && git push`.
-
-## Bookshelf на /books
-
-Книжный трекер Павла — https://shimansky.nl/books
-
-- Исходник: https://github.com/shimapa/bookshelf (статика, без сборки)
-- Копия трёх файлов лежит в `public/books/`, rewrite `/books` → `/books/index.html` в `next.config.ts`
-- В nginx на ВМ для `/books` разрешена камера: `Permissions-Policy: camera=(self)`.
+- Камера (сканер штрихкодов) требует послабления в nginx на ВМ: в `sites-available/shimansky-nl`
+  есть `location = /collection` и `location ^~ /collection/` с `Permissions-Policy: camera=(self)`.
   Общий заголовок (`camera=()`) задаётся в `/etc/nginx/conf.d/security-headers.conf` (уровень `http`),
-  послабление — в двух `location` внутри `sites-available/shimansky-nl`. Там же продублированы
-  все 6 заголовков: любой `add_header` в `location` отключает наследование с уровня `http`.
-  Прокси на autopilot заголовки не добавляет — отдаёт те, что пришли с ВМ.
+  а любой `add_header` в `location` отключает наследование — поэтому там продублированы все 6 заголовков.
+
+Обновить: `./scripts/update-collection.sh` (берёт файлы с GitHub Pages — raw.githubusercontent
+кэширует их до пяти минут), затем `git commit -am "update: collection" && git push`.
+
+Страница `/books` удалена 2026-09-23: приложение переехало на `/collection`.
+В nginx на ВМ остались `location`-блоки для `/books` — они ничего не ломают, но их можно убрать.
 
 ### Оценки Goodreads
 
@@ -125,16 +118,6 @@ cd /opt/shimansky.nl && git pull && docker compose up -d --build
 
 Локальная разработка: из некоторых сетей Goodreads недоступен (запрос виснет), тогда route
 отдаёт 502 с текстом таймаута — это ограничение сети, а не ошибка кода. Проверять на проде.
-
-### Обновить приложение
-
-```bash
-./scripts/update-books.sh    # перекачает 3 файла и переприменит патч <base>
-npm run build && npx next start -p 3020   # проверить http://localhost:3020/books в браузере
-git commit -am "update: bookshelf" && git push
-```
-
-Конфиг nginx при обновлениях менять не нужно.
 
 
 ## Что править где
