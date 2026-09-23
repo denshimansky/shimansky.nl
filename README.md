@@ -49,21 +49,40 @@ docker compose up --build
 
 ## Деплой
 
-Проект развёрнут на VPS `89.19.212.181` в `/opt/shimansky.nl/`:
-- Docker-контейнер `shimanskynl-app-1` на порту `127.0.0.1:3020`
-- nginx-конфиг `/etc/nginx/sites-enabled/shimansky-nl` проксирует на 3020
-- Let's Encrypt SAN-сертификат на 6 имён (3 домена + www)
-- Зеркала `shimanskii.nl`, `shimanskaya.nl` → 301 на `shimansky.nl`
+С 2026-09-23 сайт живёт на своей отдельной ВМ — это сервер Павла, там можно менять что угодно,
+другие сайты это не задевает.
+
+```
+браузер → shimansky.nl (DNS → 89.19.212.181, autopilot, TimeWeb Франкфурт)
+        → nginx на autopilot: только TLS + проксирование, больше ничего
+        → 65.108.45.139:443 → ВМ: nginx → контейнер 127.0.0.1:3020
+```
+
+Почему через прокси, а не DNS прямо на ВМ: ВМ стоит в Hetzner, а ТСПУ режет Hetzner из России
+(соединение замирает после ~16 КБ — картинки и JS не догружаются). TimeWeb не режется.
+Из NL/EU ВМ работает и напрямую.
+
+**ВМ** (Ubuntu 24.04, 2 vCPU / 4 ГБ / 40 ГБ, бэкап раз в неделю):
+- SSH: `ssh -p 2290 pavel@65.108.45.139` — только по ключу, `sudo` без пароля, `docker` без sudo
+- Код: `/opt/shimansky.nl` (владелец `pavel`), контейнер `shimanskynl-app-1` на `127.0.0.1:3020`
+- nginx: `/etc/nginx/sites-available/shimansky-nl` (сайт, `/books`, вебхук, редиректы зеркал),
+  заголовки безопасности — `/etc/nginx/conf.d/security-headers.conf`
+- Сертификат Let's Encrypt на 6 имён: certbot на ВМ, продлевается сам
+  (проверка HTTP-01 приходит через прокси на autopilot)
+- Зеркала `shimanskii.nl`, `shimanskaya.nl` и `www.*` → 301 на `shimansky.nl` (делает nginx ВМ)
+- Сеть изолирована: из ВМ закрыты внутренние сети и SSH/RDP к серверам ОБРП, исходящий 25 порт
+  (почту слать через API/587), есть лимит новых соединений. Интернет, GitHub, npm, Docker Hub — открыты.
 
 ### Обновить продакшн
 
+Автоматически: push в `main` → GitHub webhook → `https://shimansky.nl/deploy-webhook` →
+`webhook.service` на ВМ (от `pavel`) → `/usr/local/bin/deploy-shimansky-nl`
+(`git pull --ff-only` + `docker compose up -d --build`). Лог: `/var/log/shimansky-nl-deploy.log`.
+
+Руками на ВМ:
+
 ```bash
-# с локальной машины
-tar czf /tmp/shim-nl.tar.gz src/ public/
-scp /tmp/shim-nl.tar.gz root@89.19.212.181:/tmp/
-ssh root@89.19.212.181 "tar xzf /tmp/shim-nl.tar.gz -C /opt/shimansky.nl && \
-  cd /opt/shimansky.nl && docker compose build && \
-  docker compose up -d --force-recreate"
+cd /opt/shimansky.nl && git pull && docker compose up -d --build
 ```
 
 ## Bookshelf на /books
@@ -72,11 +91,11 @@ ssh root@89.19.212.181 "tar xzf /tmp/shim-nl.tar.gz -C /opt/shimansky.nl && \
 
 - Исходник: https://github.com/shimapa/bookshelf (статика, без сборки)
 - Копия трёх файлов лежит в `public/books/`, rewrite `/books` → `/books/index.html` в `next.config.ts`
-- В nginx для `/books` разрешена камера: `Permissions-Policy: camera=(self)`.
-  Заголовок задаётся в общем `/etc/nginx/conf.d/security-headers.conf` (уровень `http`, действует
-  на **все** сайты сервера) — трогать его нельзя. Послабление сделано локально, в двух `location`
-  внутри `sites-enabled/shimansky-nl`. Там же продублированы все 6 заголовков: любой `add_header`
-  в `location` отключает наследование с уровня `http`.
+- В nginx на ВМ для `/books` разрешена камера: `Permissions-Policy: camera=(self)`.
+  Общий заголовок (`camera=()`) задаётся в `/etc/nginx/conf.d/security-headers.conf` (уровень `http`),
+  послабление — в двух `location` внутри `sites-available/shimansky-nl`. Там же продублированы
+  все 6 заголовков: любой `add_header` в `location` отключает наследование с уровня `http`.
+  Прокси на autopilot заголовки не добавляет — отдаёт те, что пришли с ВМ.
 
 ### Оценки Goodreads
 
