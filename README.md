@@ -85,6 +85,19 @@ docker compose up --build
 cd /opt/shimansky.nl && git pull && docker compose up -d --build
 ```
 
+## Коллекция на /collection
+
+Книги и винил Павла — https://shimansky.nl/collection
+
+- Исходник: https://github.com/shimapa/bookshelf (статика, без сборки; там же живёт /books)
+- Копия файлов лежит в `public/collection/`, rewrite `/collection` → `/collection/index.html`
+  в `next.config.ts`
+- Камера (сканер штрихкодов) требует послабления в nginx на ВМ — как у `/books`:
+  в `sites-available/shimansky-nl` нужен `location /collection` с `Permissions-Policy: camera=(self)`
+  и продублированными остальными пятью заголовками безопасности.
+
+Обновить: `./scripts/update-collection.sh`, затем `git commit -am "update: collection" && git push`.
+
 ## Bookshelf на /books
 
 Книжный трекер Павла — https://shimansky.nl/books
