@@ -23,7 +23,7 @@ const dict = {
     // TODO: ctaSecondary "Download CV" — hidden until a general-purpose CV PDF is chosen
     aboutLabel: "About",
     about: [
-      "I work where financial planning meets technology. Day to day that means owning the annual planning cycle, product and gross-profit reporting, and partnering with commercial teams — then automating the parts that shouldn't need a person. Most recently I rebuilt five recurring reporting processes into an automated pipeline that frees up about a quarter of a full-time role.",
+      "I work where financial planning meets technology. Day to day that means owning the annual planning cycle, product and gross-profit reporting, and partnering with commercial teams — then automating the parts that shouldn't need a person. Most recently I rebuilt five recurring reporting processes into an automated pipeline that frees up about 25% of repetitive work for the FP&A and accounting division.",
       "Before Amsterdam I led M&A at a healthcare group and ran finance for a biotech manufacturer. That's where I learned the number itself is rarely the point — what matters is the decision it changes.",
     ],
     expertiseLabel: "What I do",
@@ -131,7 +131,7 @@ const dict = {
     // TODO: ctaSecondary «Скачать резюме» — скрыта, пока не выбран общий PDF
     aboutLabel: "Обо мне",
     about: [
-      "Работаю на стыке финансового планирования и технологий. На практике это годовой цикл планирования, отчётность по продуктам и валовой прибыли, бизнес-партнёрство с коммерческими командами — и автоматизация того, что не должно требовать человека. Недавно собрал из пяти рутинных процессов отчётности автоматизированный пайплайн, который освобождает примерно четверть ставки.",
+      "Работаю на стыке финансового планирования и технологий. На практике это годовой цикл планирования, отчётность по продуктам и валовой прибыли, бизнес-партнёрство с коммерческими командами — и автоматизация того, что не должно требовать человека. Недавно собрал из пяти рутинных процессов отчётности автоматизированный пайплайн, который освобождает около 25% рутинной работы отдела FP&A и бухгалтерии.",
       "До Амстердама руководил M&A в медицинской группе и финансами на биотех-производстве. Там и понял, что сама цифра редко имеет значение — важно решение, которое она меняет.",
     ],
     expertiseLabel: "Чем занимаюсь",
@@ -239,7 +239,7 @@ const dict = {
     // TODO: ctaSecondary "Download cv" — verborgen tot er een algemene cv-PDF is
     aboutLabel: "Over mij",
     about: [
-      "Ik werk op het snijvlak van financiële planning en technologie. In de praktijk betekent dat: eigenaarschap over de jaarlijkse planningscyclus, product- en brutowinstrapportage en samenwerking met commerciële teams — en vervolgens automatiseren wat geen mens meer hoeft te doen. Recent heb ik vijf terugkerende rapportageprocessen omgebouwd tot een geautomatiseerde pipeline die ruwweg een kwart fte vrijmaakt.",
+      "Ik werk op het snijvlak van financiële planning en technologie. In de praktijk betekent dat: eigenaarschap over de jaarlijkse planningscyclus, product- en brutowinstrapportage en samenwerking met commerciële teams — en vervolgens automatiseren wat geen mens meer hoeft te doen. Recent heb ik vijf terugkerende rapportageprocessen omgebouwd tot een geautomatiseerde pipeline die ongeveer 25% van het repetitieve werk van de FP&A- en boekhoudafdeling vrijmaakt.",
       "Vóór Amsterdam leidde ik M&A bij een healthcare-groep en was ik verantwoordelijk voor finance bij een biotechproducent. Daar leerde ik dat het getal zelf zelden het punt is — het gaat om de beslissing die het verandert.",
     ],
     expertiseLabel: "Wat ik doe",
