@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 type Lang = "en" | "ru" | "nl";
-type Theme = "dark" | "light";
 
 const COMPANY_URLS: Record<string, string> = {
   "KYOCERA Document Solutions Europe": "https://www.kyoceradocumentsolutions.eu/",
@@ -328,26 +327,12 @@ const dict = {
 function highlightMetrics(text: string): string {
   return text.replace(
     /(\$\d+(?:[.,]\d+)*[MKB]?(?:\+)?(?:\s*[–—-]\s*\$?\d+(?:[.,]\d+)*[MKB]?(?:\+)?)?|[−\u2212-]\d+(?:[.,]\d+)*%|\b\d+(?:[.,]\d+)*%)/g,
-    '<span class="font-semibold text-orange-600 dark:text-orange-300">$1</span>',
+    '<span class="font-semibold text-orange-600">$1</span>',
   );
 }
 
 export default function HomePage() {
   const [lang, setLang] = useState<Lang>("en");
-  const [theme, setTheme] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const stored = (localStorage.getItem("theme") as Theme | null) || "dark";
-    setTheme(stored);
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme, mounted]);
 
   const t = dict[lang];
 
@@ -360,9 +345,9 @@ export default function HomePage() {
   }, [lang, t]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 transition-colors">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 backdrop-blur-md bg-zinc-50/70 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800/50">
+      <div className="sticky top-0 z-10 backdrop-blur-md bg-zinc-50/70 border-b border-zinc-200">
         <div className="mx-auto max-w-3xl px-6 py-3 flex items-center justify-between gap-3">
           <div className="text-zinc-500 text-xs font-mono tracking-widest uppercase">
             shimansky.nl
@@ -375,42 +360,35 @@ export default function HomePage() {
                   onClick={() => setLang(l)}
                   className={`px-3 py-1.5 rounded-md transition-all uppercase tracking-wider ${
                     lang === l
-                      ? "bg-orange-500/15 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300 border border-orange-500/30"
-                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 border border-transparent"
+                      ? "bg-orange-500/15 text-orange-600 border border-orange-500/30"
+                      : "text-zinc-500 hover:text-zinc-900 border border-transparent"
                   }`}
                 >
                   {l}
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-all"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-            </button>
           </div>
         </div>
       </div>
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.08),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.06),transparent_70%)]" />
-        <div className="relative mx-auto max-w-3xl px-6 pt-16 md:pt-24 pb-12 md:pb-16">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.08),transparent_70%)]" />
+        <div className="relative mx-auto max-w-3xl px-6 pt-6 md:pt-12 pb-10 md:pb-12">
           <div className="flex flex-col items-center text-center">
             <div className="relative">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-orange-500/30 to-transparent blur-xl" />
               <img
                 src="/pavel.jpg"
                 alt="Pavel Shimansky"
-                className="relative h-36 w-36 md:h-44 md:w-44 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-800 shadow-2xl"
+                className="relative h-24 w-24 md:h-36 md:w-36 rounded-full object-cover ring-2 ring-zinc-200 shadow-2xl"
               />
             </div>
-            <h1 className="mt-8 text-4xl md:text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="mt-5 text-4xl md:text-6xl font-bold tracking-tight text-zinc-900">
               {t.name}
             </h1>
-            <p className="mt-4 text-lg md:text-xl text-zinc-700 dark:text-zinc-300 max-w-xl">
+            <p className="mt-3 text-lg md:text-xl text-zinc-700 max-w-xl">
               {t.title}
             </p>
             <p className="mt-1 text-sm md:text-base text-zinc-500 max-w-xl">
@@ -420,12 +398,12 @@ export default function HomePage() {
               <PinIcon />
               {t.location}
             </div>
-            <p className="mt-6 text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-2xl">
+            <p className="mt-4 text-sm md:text-base text-zinc-700 leading-relaxed max-w-2xl">
               {t.intro}
             </p>
 
             {/* Quick contact buttons */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
               <ContactButton
                 href="mailto:pavel@shimansky.nl"
                 label="Email"
@@ -453,7 +431,7 @@ export default function HomePage() {
             {t.about.map((p, i) => (
               <p
                 key={i}
-                className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-base md:text-lg"
+                className="text-zinc-700 leading-relaxed text-base md:text-lg"
               >
                 {p}
               </p>
@@ -467,12 +445,12 @@ export default function HomePage() {
             {t.expertise.map((e) => (
               <div
                 key={e.title}
-                className="p-4 rounded-lg bg-white/60 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800"
+                className="p-4 rounded-lg bg-white/60 border border-zinc-200"
               >
-                <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold text-sm mb-1.5">
+                <h3 className="text-zinc-900 font-semibold text-sm mb-1.5">
                   {e.title}
                 </h3>
-                <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+                <p className="text-zinc-600 text-sm leading-relaxed">
                   {e.body}
                 </p>
               </div>
@@ -488,18 +466,18 @@ export default function HomePage() {
               return (
                 <div
                   key={i}
-                  className="relative pl-6 border-l border-zinc-200 dark:border-zinc-800 hover:border-orange-500/50 transition-colors"
+                  className="relative pl-6 border-l border-zinc-200 hover:border-orange-500/50 transition-colors"
                 >
-                  <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-zinc-700 ring-4 ring-zinc-50 dark:ring-zinc-950" />
+                  <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-zinc-300 ring-4 ring-zinc-50" />
                   <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
-                    <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold text-lg">
+                    <h3 className="text-zinc-900 font-semibold text-lg">
                       {job.role}
                     </h3>
                     <div className="text-zinc-500 text-xs font-mono tracking-wider">
                       {job.period}
                     </div>
                   </div>
-                  <div className="text-orange-600 dark:text-orange-300/90 text-sm font-medium mb-1">
+                  <div className="text-orange-600 text-sm font-medium mb-1">
                     {url ? (
                       <a
                         href={url}
@@ -519,7 +497,7 @@ export default function HomePage() {
                     {job.bullets.map((b, j) => (
                       <li
                         key={j}
-                        className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed flex gap-3"
+                        className="text-zinc-600 text-sm leading-relaxed flex gap-3"
                       >
                         <span className="flex h-[1.625em] items-center shrink-0">
                           <span className="block h-1 w-1 rounded-full bg-orange-500/70" />
@@ -540,14 +518,14 @@ export default function HomePage() {
             {t.education.map((ed, i) => (
               <div key={i}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
-                  <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                  <h3 className="text-zinc-900 font-semibold">
                     {ed.school}
                   </h3>
                   <div className="text-zinc-500 text-xs font-mono tracking-wider">
                     {ed.year}
                   </div>
                 </div>
-                <div className="text-zinc-600 dark:text-zinc-400 text-sm">
+                <div className="text-zinc-600 text-sm">
                   {ed.degree} · {ed.place}
                 </div>
               </div>
@@ -557,7 +535,7 @@ export default function HomePage() {
             {t.credentials.map((c) => (
               <li
                 key={c}
-                className="text-zinc-600 dark:text-zinc-400 text-sm flex gap-2"
+                className="text-zinc-600 text-sm flex gap-2"
               >
                 <span className="text-orange-500/70">✓</span>
                 {c}
@@ -568,14 +546,14 @@ export default function HomePage() {
 
         {/* Languages */}
         <Section label={t.languagesLabel}>
-          <p className="text-zinc-700 dark:text-zinc-300 text-sm md:text-base leading-relaxed">
+          <p className="text-zinc-700 text-sm md:text-base leading-relaxed">
             {t.languages}
           </p>
         </Section>
 
         {/* Contact */}
         <Section label={t.contactLabel}>
-          <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-5">
+          <p className="text-zinc-700 leading-relaxed mb-5">
             {t.contactBody}
           </p>
           <div className="grid sm:grid-cols-3 gap-3">
@@ -601,7 +579,7 @@ export default function HomePage() {
         </Section>
 
         {/* Footer */}
-        <div className="pt-8 border-t border-zinc-200 dark:border-zinc-900 text-center text-zinc-500 dark:text-zinc-600 text-xs font-mono tracking-wider">
+        <div className="pt-8 border-t border-zinc-200 text-center text-zinc-500 text-xs font-mono tracking-wider">
           © {new Date().getFullYear()} · shimansky.nl
         </div>
       </div>
@@ -618,7 +596,7 @@ function Section({
 }) {
   return (
     <section>
-      <div className="text-orange-600 dark:text-orange-400/80 text-[10px] md:text-xs font-mono tracking-[0.3em] uppercase mb-5">
+      <div className="text-orange-600 text-[10px] md:text-xs font-mono tracking-[0.3em] uppercase mb-5">
         — {label}
       </div>
       {children}
@@ -640,7 +618,7 @@ function ContactButton({
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm hover:bg-orange-500/5 dark:hover:bg-orange-500/10 hover:border-orange-500/40 hover:text-orange-600 dark:hover:text-orange-300 transition-all"
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-zinc-200 text-zinc-700 text-sm hover:bg-orange-500/5 hover:border-orange-500/40 hover:text-orange-600 transition-all"
     >
       {icon}
       {label}
@@ -664,7 +642,7 @@ function ContactCard({
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-      className="flex items-center gap-3 p-4 rounded-lg bg-white/60 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:bg-orange-500/5 hover:border-orange-500/30 transition-all group"
+      className="flex items-center gap-3 p-4 rounded-lg bg-white/60 border border-zinc-200 hover:bg-orange-500/5 hover:border-orange-500/30 transition-all group"
     >
       <span className="text-zinc-500 group-hover:text-orange-500 transition-colors">
         {icon}
@@ -673,7 +651,7 @@ function ContactCard({
         <div className="text-zinc-500 text-[10px] font-mono tracking-[0.2em] uppercase mb-1">
           {label}
         </div>
-        <div className="text-zinc-800 dark:text-zinc-200 text-sm group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors break-all">
+        <div className="text-zinc-800 text-sm group-hover:text-orange-600 transition-colors break-all">
           {value}
         </div>
       </div>
@@ -750,42 +728,6 @@ function ExternalIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M14 5h5v5M19 5l-9 9M5 5h5M5 5v14h14v-5"
-      />
-    </svg>
-  );
-}
-
-function SunIcon() {
-  return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      viewBox="0 0 24 24"
-    >
-      <circle cx="12" cy="12" r="4" />
-      <path
-        strokeLinecap="round"
-        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-      />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
       />
     </svg>
   );
