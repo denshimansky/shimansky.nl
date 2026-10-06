@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/pavel.jpg",
-        width: 400,
-        height: 400,
+        width: 800,
+        height: 800,
         alt: "Pavel Shimansky",
       },
     ],
