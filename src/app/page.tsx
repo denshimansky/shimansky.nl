@@ -61,7 +61,7 @@ const dict = {
           "Product sales and gross-profit reporting across three business units, plus SG&A actual-vs-plan analysis.",
           "Finance business partner to a group IT services entity: sales and gross-profit analysis per customer and per tender.",
           "Power BI dashboards and data models used across Finance, Consolidation and HR.",
-          "Automated five recurring reporting processes (Power Automate, Copilot Studio, AI Builder), freeing ~444 hours per year (≈0.25 FTE); author of an internal Finance & AI newsletter.",
+          "Automated five recurring reporting processes (Power Automate, Copilot Studio, AI Builder), freeing ~444 hours per year (≈25% of the division's repetitive work); author of an internal Finance & AI newsletter.",
         ],
       },
       {
@@ -169,7 +169,7 @@ const dict = {
           "Отчётность по продажам и валовой прибыли в разрезе трёх бизнес-юнитов, а также анализ SG&A «факт против плана».",
           "Финансовый бизнес-партнёр ИТ-сервисной структуры группы: анализ продаж и валовой прибыли по клиентам и тендерам.",
           "Дашборды и модели данных в Power BI, используемые Finance, Consolidation и HR.",
-          "Автоматизировал пять регулярных процессов отчётности (Power Automate, Copilot Studio, AI Builder) — около 444 часов в год (≈0,25 ставки); автор внутренней рассылки Finance & AI.",
+          "Автоматизировал пять регулярных процессов отчётности (Power Automate, Copilot Studio, AI Builder) — около 444 часов в год (≈25% рутинной работы отдела); автор внутренней рассылки Finance & AI.",
         ],
       },
       {
@@ -277,7 +277,7 @@ const dict = {
           "Rapportage van productomzet en brutowinst over drie business units, plus SG&A-analyse (realisatie versus plan).",
           "Finance business partner van een IT-dienstenentiteit binnen de groep: omzet- en brutowinstanalyse per klant en per tender.",
           "Power BI-dashboards en datamodellen die worden gebruikt door Finance, Consolidation en HR.",
-          "Vijf terugkerende rapportageprocessen geautomatiseerd (Power Automate, Copilot Studio, AI Builder), goed voor ~444 uur per jaar (≈0,25 fte); auteur van een interne Finance & AI-nieuwsbrief.",
+          "Vijf terugkerende rapportageprocessen geautomatiseerd (Power Automate, Copilot Studio, AI Builder), goed voor ~444 uur per jaar (≈25% van het repetitieve werk van de afdeling); auteur van een interne Finance & AI-nieuwsbrief.",
         ],
       },
       {
