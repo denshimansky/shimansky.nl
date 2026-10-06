@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Lang = "en" | "ru" | "nl";
 
@@ -348,6 +348,36 @@ export default function HomePage() {
 
   const t = dict[lang];
 
+  // Hovering the photo makes it sway in 3D like a coin; on leave it eases back flat.
+  const photoRef = useRef<HTMLImageElement>(null);
+  const coinSpin = useRef<Animation | null>(null);
+  const startCoinSpin = () => {
+    const el = photoRef.current;
+    if (!el || coinSpin.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    coinSpin.current = el.animate(
+      [
+        { transform: "rotateY(0deg) rotateX(0deg)", easing: "ease-out" },
+        { transform: "rotateY(28deg) rotateX(5deg)", offset: 0.25, easing: "ease-in-out" },
+        { transform: "rotateY(-28deg) rotateX(-5deg)", offset: 0.75, easing: "ease-in" },
+        { transform: "rotateY(0deg) rotateX(0deg)" },
+      ],
+      { duration: 3200, iterations: Infinity },
+    );
+  };
+  const stopCoinSpin = () => {
+    const el = photoRef.current;
+    const spin = coinSpin.current;
+    if (!el || !spin) return;
+    const current = getComputedStyle(el).transform;
+    spin.cancel();
+    coinSpin.current = null;
+    el.animate([{ transform: current }, { transform: "none" }], {
+      duration: 500,
+      easing: "ease-out",
+    });
+  };
+
   // /collection is a separate app on the same origin that reads its language from
   // localStorage ("ru" or "en"); open it in Russian for RU, otherwise in English.
   const rememberCollectionLang = () => {
@@ -399,9 +429,12 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.08),transparent_70%)]" />
         <div className="relative mx-auto max-w-3xl px-6 pt-6 md:pt-12 pb-10 md:pb-12">
           <div className="flex flex-col items-center text-center">
-            <div className="relative">
+            <div className="relative [perspective:600px]">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-orange-500/30 to-transparent blur-xl" />
               <img
+                ref={photoRef}
+                onMouseEnter={startCoinSpin}
+                onMouseLeave={stopCoinSpin}
                 src="/pavel.jpg"
                 alt="Pavel Shimansky"
                 className="relative h-24 w-24 md:h-36 md:w-36 rounded-full object-cover ring-2 ring-zinc-200 shadow-2xl"
