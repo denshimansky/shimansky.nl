@@ -21,11 +21,10 @@ const dict = {
     intro:
       "Amsterdam-based finance professional with 9+ years across FP&A, M&A and business partnering in technology, pharma and healthcare. I build the planning and reporting systems behind better decisions — and, increasingly, the AI that runs them.",
     location: "Amsterdam, Netherlands",
-    ctaPrimary: "Get in touch",
     // TODO: ctaSecondary "Download CV" — hidden until a general-purpose CV PDF is chosen
     aboutLabel: "About",
     about: [
-      "I work where financial planning meets technology. Day to day that means owning the annual planning cycle, product and gross-profit reporting, and partnering with commercial teams — then automating the parts that shouldn't need a person. Most recently I rebuilt five recurring reporting processes into an automated pipeline that frees roughly 444 hours a year, about a quarter of a full-time role.",
+      "I work where financial planning meets technology. Day to day that means owning the annual planning cycle, product and gross-profit reporting, and partnering with commercial teams — then automating the parts that shouldn't need a person. Most recently I rebuilt five recurring reporting processes into an automated pipeline that frees up about a quarter of a full-time role.",
       "Before Amsterdam I led M&A at a healthcare group and ran finance for a biotech manufacturer. That's where I learned the number itself is rarely the point — what matters is the decision it changes.",
     ],
     expertiseLabel: "What I do",
@@ -126,11 +125,10 @@ const dict = {
     intro:
       "Финансист из Амстердама, 9+ лет в FP&A, M&A и бизнес-партнёрстве — в технологиях, фарме и здравоохранении. Строю системы планирования и отчётности, на которых держатся решения, — и всё чаще сам AI, который их обслуживает.",
     location: "Амстердам, Нидерланды",
-    ctaPrimary: "Связаться",
     // TODO: ctaSecondary «Скачать резюме» — скрыта, пока не выбран общий PDF
     aboutLabel: "Обо мне",
     about: [
-      "Работаю на стыке финансового планирования и технологий. На практике это годовой цикл планирования, отчётность по продуктам и валовой прибыли, бизнес-партнёрство с коммерческими командами — и автоматизация того, что не должно требовать человека. Недавно собрал из пяти рутинных процессов отчётности автоматизированный пайплайн, который освобождает около 444 часов в год — примерно четверть ставки.",
+      "Работаю на стыке финансового планирования и технологий. На практике это годовой цикл планирования, отчётность по продуктам и валовой прибыли, бизнес-партнёрство с коммерческими командами — и автоматизация того, что не должно требовать человека. Недавно собрал из пяти рутинных процессов отчётности автоматизированный пайплайн, который освобождает примерно четверть ставки.",
       "До Амстердама руководил M&A в медицинской группе и финансами на биотех-производстве. Там и понял, что сама цифра редко имеет значение — важно решение, которое она меняет.",
     ],
     expertiseLabel: "Чем занимаюсь",
@@ -231,11 +229,10 @@ const dict = {
     intro:
       "Finance professional in Amsterdam met 9+ jaar ervaring in FP&A, M&A en business partnering binnen technologie, farma en healthcare. Ik bouw de planning- en rapportagesystemen achter betere beslissingen — en steeds vaker ook de AI die ze draaiend houdt.",
     location: "Amsterdam, Nederland",
-    ctaPrimary: "Neem contact op",
     // TODO: ctaSecondary "Download cv" — verborgen tot er een algemene cv-PDF is
     aboutLabel: "Over mij",
     about: [
-      "Ik werk op het snijvlak van financiële planning en technologie. In de praktijk betekent dat: eigenaarschap over de jaarlijkse planningscyclus, product- en brutowinstrapportage en samenwerking met commerciële teams — en vervolgens automatiseren wat geen mens meer hoeft te doen. Recent heb ik vijf terugkerende rapportageprocessen omgebouwd tot een geautomatiseerde pipeline die ongeveer 444 uur per jaar vrijmaakt, ruwweg een kwart fte.",
+      "Ik werk op het snijvlak van financiële planning en technologie. In de praktijk betekent dat: eigenaarschap over de jaarlijkse planningscyclus, product- en brutowinstrapportage en samenwerking met commerciële teams — en vervolgens automatiseren wat geen mens meer hoeft te doen. Recent heb ik vijf terugkerende rapportageprocessen omgebouwd tot een geautomatiseerde pipeline die ruwweg een kwart fte vrijmaakt.",
       "Vóór Amsterdam leidde ik M&A bij een healthcare-groep en was ik verantwoordelijk voor finance bij een biotechproducent. Daar leerde ik dat het getal zelf zelden het punt is — het gaat om de beslissing die het verandert.",
     ],
     expertiseLabel: "Wat ik doe",
@@ -427,14 +424,8 @@ export default function HomePage() {
               {t.intro}
             </p>
 
-            {/* CTA + quick contact buttons */}
+            {/* Quick contact buttons */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors"
-              >
-                {t.ctaPrimary}
-              </a>
               <ContactButton
                 href="mailto:pavel@shimansky.nl"
                 label="Email"
@@ -583,7 +574,7 @@ export default function HomePage() {
         </Section>
 
         {/* Contact */}
-        <Section id="contact" label={t.contactLabel}>
+        <Section label={t.contactLabel}>
           <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-5">
             {t.contactBody}
           </p>
@@ -619,16 +610,14 @@ export default function HomePage() {
 }
 
 function Section({
-  id,
   label,
   children,
 }: {
-  id?: string;
   label: string;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-20">
+    <section>
       <div className="text-orange-600 dark:text-orange-400/80 text-[10px] md:text-xs font-mono tracking-[0.3em] uppercase mb-5">
         — {label}
       </div>
