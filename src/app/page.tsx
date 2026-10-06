@@ -7,320 +7,324 @@ type Theme = "dark" | "light";
 
 const COMPANY_URLS: Record<string, string> = {
   "KYOCERA Document Solutions Europe": "https://www.kyoceradocumentsolutions.eu/",
-  Generium: "https://generium.ru/en/",
-  Mosinzhproekt: "https://mosinzhproekt.ru/en/",
-  Мосинжпроект: "https://mosinzhproekt.ru/en/",
+  "Generium Pharmaceuticals": "https://generium.ru/en/",
 };
 
 const dict = {
   en: {
-    title: "FP&A & Corporate Finance Professional",
-    location: "Amsterdam, Netherlands",
-    aboutLabel: "About",
-    about:
-      "Finance professional with 9+ years of experience across budgeting, forecasting, financial analysis, management reporting, and business partnering in international and fast-evolving environments. Currently leading FP&A and corporate finance at KYOCERA Document Solutions Europe in Amsterdam.",
-    experienceLabel: "Experience",
-    educationLabel: "Education",
-    skillsLabel: "Expertise",
-    languagesLabel: "Languages",
-    contactLabel: "Get in touch",
+    seoTitle: "Pavel Shimansky — Corporate Finance & FP&A, Amsterdam",
+    seoDescription:
+      "FP&A, business partnering and corporate finance professional in Amsterdam. Planning and performance management, M&A, and finance automation with Power BI, Power Automate and AI tooling.",
     name: "Pavel Shimansky",
-    languages: [
-      { name: "English", level: "Full Professional" },
-      { name: "Russian", level: "Native" },
-      { name: "French", level: "Professional Working" },
-      { name: "Italian", level: "Limited Working" },
-      { name: "Dutch", level: "Elementary" },
+    title: "Corporate Finance & FP&A",
+    subtitle: "Planning, performance and finance automation",
+    intro:
+      "Amsterdam-based finance professional with 9+ years across FP&A, M&A and business partnering in technology, pharma and healthcare. I build the planning and reporting systems behind better decisions — and, increasingly, the AI that runs them.",
+    location: "Amsterdam, Netherlands",
+    ctaPrimary: "Get in touch",
+    // TODO: ctaSecondary "Download CV" — hidden until a general-purpose CV PDF is chosen
+    aboutLabel: "About",
+    about: [
+      "I work where financial planning meets technology. Day to day that means owning the annual planning cycle, product and gross-profit reporting, and partnering with commercial teams — then automating the parts that shouldn't need a person. Most recently I rebuilt five recurring reporting processes into an automated pipeline that frees roughly 444 hours a year, about a quarter of a full-time role.",
+      "Before Amsterdam I led M&A at a healthcare group and ran finance for a biotech manufacturer. That's where I learned the number itself is rarely the point — what matters is the decision it changes.",
     ],
-    skills: [
-      "Corporate FP&A",
-      "Budgeting & Forecasting",
-      "Management Reporting",
-      "Business Partnering",
-      "Financial Modeling",
-      "Power BI",
-      "AI-powered Reporting",
-      "M&A Support",
-      "CFA Level I",
+    expertiseLabel: "What I do",
+    expertise: [
+      {
+        title: "Planning & performance",
+        body: "Annual planning and budgeting, rolling forecasts, long-range planning, variance and performance analysis.",
+      },
+      {
+        title: "Business partnering",
+        body: "Working with commercial and operational teams on pricing, margin and product mix — translating financials into decisions people act on.",
+      },
+      {
+        title: "Corporate finance & M&A",
+        body: "Valuation, due diligence, investment and business cases, post-merger integration.",
+      },
+      {
+        title: "Finance automation & AI",
+        body: "Power BI, Power Query/DAX, Power Automate, Copilot Studio, AI Builder, Python — building the tooling, not just using it.",
+      },
+      {
+        title: "Systems & data",
+        body: "SAP S/4HANA, reporting data models, data quality and reporting standardisation across entities.",
+      },
     ],
+    experienceLabel: "Experience",
     experience: [
       {
         company: "KYOCERA Document Solutions Europe",
         role: "Corporate Finance Analyst",
-        period: "Sep 2023 — Present",
-        location: "Amsterdam, Netherlands",
+        period: "Sep 2023 — present",
+        meta: "Amsterdam, Netherlands",
         bullets: [
-          "Lead budgeting, forecasting and strategic planning across OPEX, CAPEX and headcount.",
-          "Finance partner to Sales & Product teams on pricing, product mix and margin performance.",
-          "Built interactive Power BI dashboards and AI-powered variance analysis (−40% manual effort).",
-          "Reduced discretionary costs by 7% through targeted spend controls.",
+          "Run the annual Master Plan cycle end to end for the HQ entity — templates to divisions, collection of division and Sales input, consolidation, reporting to management — and consolidate a second entity's submissions.",
+          "Product sales and gross-profit reporting across three business units, plus SG&A actual-vs-plan analysis.",
+          "Finance business partner to a group IT services entity: sales and gross-profit analysis per customer and per tender.",
+          "Power BI dashboards and data models used across Finance, Consolidation and HR.",
+          "Automated five recurring reporting processes (Power Automate, Copilot Studio, AI Builder), freeing ~444 hours per year (≈0.25 FTE); author of an internal Finance & AI newsletter.",
         ],
       },
       {
-        company: "Generium",
+        company: "Generium Pharmaceuticals",
         role: "Senior Finance Manager",
-        period: "Mar 2022 — Sep 2023",
-        location: "Moscow, Russia",
+        period: "Mar 2018 — Sep 2023",
+        meta: "Biotech",
         bullets: [
-          "Increased debt financing with leading banks and state funds, supporting M&A activity.",
-          "Brokered a Joint Venture between Generium and Takeda Pharmaceuticals (hemophilia portfolio).",
-          "Built financial models and option valuations for M&A deals generating $200M+ in revenue.",
-        ],
-      },
-      {
-        company: "Generium",
-        role: "Financial Analyst",
-        period: "Mar 2018 — Mar 2022",
-        location: "Moscow, Russia",
-        bullets: [
-          "Budgeting and control over R&D projects.",
-          "Built Power BI dashboards for R&D financial reporting.",
+          "Owned budgeting, monthly reporting and forecasting cycles, with variance analysis for executive decision-making.",
+          "Built and maintained integrated P&L, balance sheet and cash flow models used for long-range planning.",
+          "Identified unprofitable long-term projects, enabling avoidance of ~$70M in inefficient investment.",
+          "Optimised working capital and inventory structure, reducing unused stock by 15%.",
         ],
       },
       {
         company: "Medinvestgroup",
-        role: "Head of Financial Analysis & Control",
-        period: "May 2021 — Dec 2022",
-        location: "Moscow, Russia",
+        role: "Head of M&A",
+        period: "Mar 2021 — Dec 2022",
+        meta: "Healthcare",
         bullets: [
-          "Closed three M&A deals on buy and sell sides ($5M–$14M).",
-          "Built financial models and due diligence for one of the TOP-5 private clinic groups in Russia ($206M revenue).",
-        ],
-      },
-      {
-        company: "Mosinzhproekt",
-        role: "Senior Specialist · Investment & International Affairs",
-        period: "Jun 2016 — Mar 2018",
-        location: "Moscow, Russia",
-        bullets: [
-          "Real estate market analysis and investment reporting for major Moscow urban projects.",
-          "Managed advisor relationships across acquisitions, dispositions and contract compliance.",
+          "Led and developed a two-person deal team across three transactions ($5–14M): valuation, due diligence and integration.",
+          "Built financial models and investment cases supporting growth decisions.",
+          "Delivered analysis that eliminated unprofitable activities, generating ~$10M in annual savings.",
         ],
       },
     ],
+    educationLabel: "Education & credentials",
     education: [
       {
         school: "ESSEC Business School",
-        degree: "Master's degree · Strategy & Management of International Business",
-        period: "2015 — 2016",
+        degree: "MSc, Strategy & Management of International Business",
+        place: "Paris & Singapore",
+        year: "2016",
       },
       {
-        school: "Finance University under the Government of the Russian Federation",
-        degree: "Bachelor's degree · Investment Management",
-        period: "2011 — 2015",
+        school: "Financial University under the Government of the Russian Federation",
+        degree: "BSc (Hons), Finance Management",
+        place: "Moscow",
+        year: "2015",
       },
     ],
-    certifications: [
+    credentials: [
+      "CFA — Level I passed, 2022",
       "Financial Modeling & Valuation Analyst (FMVA®)",
-      "CFA Level I (Feb 2022)",
     ],
-    certificationsLabel: "Certifications",
+    languagesLabel: "Languages",
+    languages:
+      "Russian (native) · English (fluent) · French and Italian (upper-intermediate) · Dutch (learning)",
+    contactLabel: "Contact",
+    contactBody:
+      "Based in Amsterdam, open to FP&A, business partnering and corporate finance roles in the Netherlands.",
   },
   ru: {
-    title: "Финансовый аналитик · FP&A и Corporate Finance",
-    location: "Амстердам, Нидерланды",
-    aboutLabel: "Обо мне",
-    about:
-      "Финансист с опытом более 9 лет в бюджетировании, прогнозировании, финансовом анализе и управленческой отчётности в международных и динамичных компаниях. Сейчас руковожу процессами FP&A и корпоративных финансов в KYOCERA Document Solutions Europe в Амстердаме.",
-    experienceLabel: "Опыт работы",
-    educationLabel: "Образование",
-    skillsLabel: "Навыки",
-    languagesLabel: "Языки",
-    contactLabel: "Связаться",
+    seoTitle: "Павел Шиманский — корпоративные финансы и FP&A, Амстердам",
+    seoDescription:
+      "FP&A, бизнес-партнёрство и корпоративные финансы в Амстердаме. Планирование и управление эффективностью, M&A, автоматизация финансов на Power BI, Power Automate и AI.",
     name: "Павел Шиманский",
-    languages: [
-      { name: "Английский", level: "C2 — свободно" },
-      { name: "Русский", level: "Родной" },
-      { name: "Французский", level: "C1 — продвинутый" },
-      { name: "Итальянский", level: "B1 — базовый" },
-      { name: "Нидерландский", level: "A1 — начальный" },
+    title: "Корпоративные финансы и FP&A",
+    subtitle: "Планирование, эффективность и автоматизация финансов",
+    intro:
+      "Финансист из Амстердама, 9+ лет в FP&A, M&A и бизнес-партнёрстве — в технологиях, фарме и здравоохранении. Строю системы планирования и отчётности, на которых держатся решения, — и всё чаще сам AI, который их обслуживает.",
+    location: "Амстердам, Нидерланды",
+    ctaPrimary: "Связаться",
+    // TODO: ctaSecondary «Скачать резюме» — скрыта, пока не выбран общий PDF
+    aboutLabel: "Обо мне",
+    about: [
+      "Работаю на стыке финансового планирования и технологий. На практике это годовой цикл планирования, отчётность по продуктам и валовой прибыли, бизнес-партнёрство с коммерческими командами — и автоматизация того, что не должно требовать человека. Недавно собрал из пяти рутинных процессов отчётности автоматизированный пайплайн, который освобождает около 444 часов в год — примерно четверть ставки.",
+      "До Амстердама руководил M&A в медицинской группе и финансами на биотех-производстве. Там и понял, что сама цифра редко имеет значение — важно решение, которое она меняет.",
     ],
-    skills: [
-      "Corporate FP&A",
-      "Бюджетирование и прогнозирование",
-      "Управленческая отчётность",
-      "Business Partnering",
-      "Финансовое моделирование",
-      "Power BI",
-      "AI в отчётности",
-      "Поддержка M&A",
-      "CFA Level I",
+    expertiseLabel: "Чем занимаюсь",
+    expertise: [
+      {
+        title: "Планирование и эффективность",
+        body: "Годовое планирование и бюджетирование, скользящие прогнозы, долгосрочное планирование, анализ отклонений и результатов.",
+      },
+      {
+        title: "Бизнес-партнёрство",
+        body: "Работа с коммерческими и операционными командами по цене, марже и продуктовому миксу — перевод финансов в решения, которые реально принимают.",
+      },
+      {
+        title: "Корпоративные финансы и M&A",
+        body: "Оценка, due diligence, инвестиционные и бизнес-кейсы, интеграция после сделки.",
+      },
+      {
+        title: "Автоматизация финансов и AI",
+        body: "Power BI, Power Query/DAX, Power Automate, Copilot Studio, AI Builder, Python — не просто пользуюсь инструментами, а собираю их.",
+      },
+      {
+        title: "Системы и данные",
+        body: "SAP S/4HANA, модели данных для отчётности, качество данных и стандартизация отчётности между юрлицами.",
+      },
     ],
+    experienceLabel: "Опыт",
     experience: [
       {
         company: "KYOCERA Document Solutions Europe",
         role: "Corporate Finance Analyst",
-        period: "сент. 2023 — по н.в.",
-        location: "Амстердам, Нидерланды",
+        period: "сен 2023 — наст. время",
+        meta: "Амстердам, Нидерланды",
         bullets: [
-          "Веду бюджетирование, прогнозирование и стратегическое планирование по OPEX, CAPEX и численности.",
-          "Финансовый партнёр для отделов продаж и продуктов: ценообразование, продуктовый микс, маржинальность.",
-          "Построил интерактивные Power BI дашборды и AI-инструменты для variance analysis (−40% ручного труда).",
-          "Снизил дискреционные расходы на 7% за счёт точечного контроля.",
+          "Веду годовой цикл Master Plan от начала до конца для головной структуры — шаблоны дивизионам, сбор данных от дивизионов и Sales, консолидация, отчёт менеджменту — и консолидирую отчётность второго юрлица.",
+          "Отчётность по продажам и валовой прибыли в разрезе трёх бизнес-юнитов, а также анализ SG&A «факт против плана».",
+          "Финансовый бизнес-партнёр ИТ-сервисной структуры группы: анализ продаж и валовой прибыли по клиентам и тендерам.",
+          "Дашборды и модели данных в Power BI, используемые Finance, Consolidation и HR.",
+          "Автоматизировал пять регулярных процессов отчётности (Power Automate, Copilot Studio, AI Builder) — около 444 часов в год (≈0,25 ставки); автор внутренней рассылки Finance & AI.",
         ],
       },
       {
-        company: "Generium",
+        company: "Generium Pharmaceuticals",
         role: "Senior Finance Manager",
-        period: "март 2022 — сент. 2023",
-        location: "Москва, Россия",
+        period: "мар 2018 — сен 2023",
+        meta: "Биотех",
         bullets: [
-          "Привлёк долговое финансирование от крупнейших банков и госфондов под M&A-сделки.",
-          "Организовал совместное предприятие Generium и Takeda Pharmaceuticals (портфель препаратов от гемофилии).",
-          "Финансовые модели и оценка опционов под M&A-сделки на $200M+ выручки.",
-        ],
-      },
-      {
-        company: "Generium",
-        role: "Financial Analyst",
-        period: "март 2018 — март 2022",
-        location: "Москва, Россия",
-        bullets: [
-          "Бюджетирование и контроль R&D-проектов.",
-          "Power BI дашборды для финансовой отчётности R&D.",
+          "Отвечал за бюджетирование, ежемесячную отчётность и прогнозирование, включая анализ отклонений для руководства.",
+          "Построил и поддерживал интегрированные модели P&L, баланса и денежного потока для долгосрочного планирования.",
+          "Выявил убыточные долгосрочные проекты, что позволило избежать ~$70 млн неэффективных инвестиций.",
+          "Оптимизировал оборотный капитал и структуру запасов, сократив неиспользуемые остатки на 15%.",
         ],
       },
       {
         company: "Medinvestgroup",
-        role: "Head of Financial Analysis & Control",
-        period: "май 2021 — дек. 2022",
-        location: "Москва, Россия",
+        role: "Head of M&A",
+        period: "мар 2021 — дек 2022",
+        meta: "Здравоохранение",
         bullets: [
-          "Закрыл три M&A-сделки на стороне покупателя и продавца ($5M–$14M).",
-          "Финансовые модели и due diligence для одной из ТОП-5 групп частных клиник России ($206M выручки).",
-        ],
-      },
-      {
-        company: "Мосинжпроект",
-        role: "Старший специалист · Инвестиции и международные отношения",
-        period: "июнь 2016 — март 2018",
-        location: "Москва, Россия",
-        bullets: [
-          "Анализ рынка недвижимости и инвестиционная отчётность по крупным городским проектам Москвы.",
-          "Управление отношениями с консультантами по сделкам и контрактному комплаенсу.",
+          "Руководил командой из двух человек в трёх сделках ($5–14 млн): оценка, due diligence, интеграция.",
+          "Разрабатывал финансовые модели и инвестиционные кейсы для решений о росте.",
+          "Подготовил анализ, позволивший отказаться от убыточных направлений, — ~$10 млн экономии в год.",
         ],
       },
     ],
+    educationLabel: "Образование и квалификация",
     education: [
       {
         school: "ESSEC Business School",
-        degree: "Магистр · Стратегия и управление международным бизнесом",
-        period: "2015 — 2016",
+        degree: "MSc, Strategy & Management of International Business",
+        place: "Париж и Сингапур",
+        year: "2016",
       },
       {
         school: "Финансовый университет при Правительстве РФ",
-        degree: "Бакалавр · Управление инвестициями",
-        period: "2011 — 2015",
+        degree: "BSc (с отличием), финансовый менеджмент",
+        place: "Москва",
+        year: "2015",
       },
     ],
-    certifications: [
+    credentials: [
+      "CFA — сдан Level I, 2022",
       "Financial Modeling & Valuation Analyst (FMVA®)",
-      "CFA Level I (февраль 2022)",
     ],
-    certificationsLabel: "Сертификаты",
+    languagesLabel: "Языки",
+    languages:
+      "Русский (родной) · английский (свободно) · французский и итальянский (выше среднего) · нидерландский (изучаю)",
+    contactLabel: "Контакты",
+    contactBody:
+      "Живу в Амстердаме, открыт к позициям в FP&A, бизнес-партнёрстве и корпоративных финансах в Нидерландах.",
   },
   nl: {
-    title: "FP&A & Corporate Finance Professional",
-    location: "Amsterdam, Nederland",
-    aboutLabel: "Over mij",
-    about:
-      "Finance professional met meer dan 9 jaar ervaring in budgettering, forecasting, financiële analyse, management reporting en business partnering binnen internationale en snel veranderende omgevingen. Momenteel verantwoordelijk voor FP&A en corporate finance bij KYOCERA Document Solutions Europe in Amsterdam.",
-    experienceLabel: "Werkervaring",
-    educationLabel: "Opleiding",
-    skillsLabel: "Expertise",
-    languagesLabel: "Talen",
-    contactLabel: "Contact",
+    seoTitle: "Pavel Shimansky — Corporate Finance & FP&A, Amsterdam",
+    seoDescription:
+      "FP&A, business partnering en corporate finance in Amsterdam. Planning en performance management, M&A en finance-automatisering met Power BI, Power Automate en AI-tooling.",
     name: "Pavel Shimansky",
-    languages: [
-      { name: "Engels", level: "Volledig professioneel" },
-      { name: "Russisch", level: "Moedertaal" },
-      { name: "Frans", level: "Professioneel" },
-      { name: "Italiaans", level: "Basis" },
-      { name: "Nederlands", level: "Beginner" },
+    title: "Corporate Finance & FP&A",
+    subtitle: "Planning, performance en finance-automatisering",
+    intro:
+      "Finance professional in Amsterdam met 9+ jaar ervaring in FP&A, M&A en business partnering binnen technologie, farma en healthcare. Ik bouw de planning- en rapportagesystemen achter betere beslissingen — en steeds vaker ook de AI die ze draaiend houdt.",
+    location: "Amsterdam, Nederland",
+    ctaPrimary: "Neem contact op",
+    // TODO: ctaSecondary "Download cv" — verborgen tot er een algemene cv-PDF is
+    aboutLabel: "Over mij",
+    about: [
+      "Ik werk op het snijvlak van financiële planning en technologie. In de praktijk betekent dat: eigenaarschap over de jaarlijkse planningscyclus, product- en brutowinstrapportage en samenwerking met commerciële teams — en vervolgens automatiseren wat geen mens meer hoeft te doen. Recent heb ik vijf terugkerende rapportageprocessen omgebouwd tot een geautomatiseerde pipeline die ongeveer 444 uur per jaar vrijmaakt, ruwweg een kwart fte.",
+      "Vóór Amsterdam leidde ik M&A bij een healthcare-groep en was ik verantwoordelijk voor finance bij een biotechproducent. Daar leerde ik dat het getal zelf zelden het punt is — het gaat om de beslissing die het verandert.",
     ],
-    skills: [
-      "Corporate FP&A",
-      "Budgettering & Forecasting",
-      "Management Reporting",
-      "Business Partnering",
-      "Financial Modeling",
-      "Power BI",
-      "AI-gedreven rapportage",
-      "M&A Support",
-      "CFA Level I",
+    expertiseLabel: "Wat ik doe",
+    expertise: [
+      {
+        title: "Planning & performance",
+        body: "Jaarplanning en budgettering, rolling forecasts, meerjarenplanning, variantie- en performanceanalyse.",
+      },
+      {
+        title: "Business partnering",
+        body: "Samenwerken met commerciële en operationele teams op prijs, marge en productmix — cijfers vertalen naar beslissingen waar mensen iets mee doen.",
+      },
+      {
+        title: "Corporate finance & M&A",
+        body: "Waardering, due diligence, investment- en business cases, post-merger integratie.",
+      },
+      {
+        title: "Finance-automatisering & AI",
+        body: "Power BI, Power Query/DAX, Power Automate, Copilot Studio, AI Builder, Python — ik gebruik de tooling niet alleen, ik bouw die ook.",
+      },
+      {
+        title: "Systemen & data",
+        body: "SAP S/4HANA, rapportagedatamodellen, datakwaliteit en standaardisatie van rapportage over entiteiten heen.",
+      },
     ],
+    experienceLabel: "Werkervaring",
     experience: [
       {
         company: "KYOCERA Document Solutions Europe",
         role: "Corporate Finance Analyst",
-        period: "sep 2023 — Heden",
-        location: "Amsterdam, Nederland",
+        period: "sep 2023 — heden",
+        meta: "Amsterdam, Nederland",
         bullets: [
-          "Leid budgettering, forecasting en strategische planning voor OPEX, CAPEX en headcount.",
-          "Finance partner voor Sales- en Productteams op het gebied van pricing, product mix en marges.",
-          "Interactieve Power BI dashboards en AI-tools voor variance analyse gebouwd (−40% handmatig werk).",
-          "Discretionaire kosten met 7% verlaagd via gerichte uitgavencontroles.",
+          "Voer de jaarlijkse Master Plan-cyclus end-to-end uit voor de hoofdentiteit — templates naar divisies, input ophalen bij divisies en Sales, consolideren en rapporteren aan het management — en consolideer de inzendingen van een tweede entiteit.",
+          "Rapportage van productomzet en brutowinst over drie business units, plus SG&A-analyse (realisatie versus plan).",
+          "Finance business partner van een IT-dienstenentiteit binnen de groep: omzet- en brutowinstanalyse per klant en per tender.",
+          "Power BI-dashboards en datamodellen die worden gebruikt door Finance, Consolidation en HR.",
+          "Vijf terugkerende rapportageprocessen geautomatiseerd (Power Automate, Copilot Studio, AI Builder), goed voor ~444 uur per jaar (≈0,25 fte); auteur van een interne Finance & AI-nieuwsbrief.",
         ],
       },
       {
-        company: "Generium",
+        company: "Generium Pharmaceuticals",
         role: "Senior Finance Manager",
-        period: "mrt 2022 — sep 2023",
-        location: "Moskou, Rusland",
+        period: "mrt 2018 — sep 2023",
+        meta: "Biotech",
         bullets: [
-          "Schuldfinanciering bij grote banken en staatsfondsen voor M&A-activiteiten.",
-          "Joint Venture tussen Generium en Takeda Pharmaceuticals tot stand gebracht (hemofilie-portfolio).",
-          "Financiële modellen en optiewaardering voor M&A-deals met $200M+ omzet.",
-        ],
-      },
-      {
-        company: "Generium",
-        role: "Financial Analyst",
-        period: "mrt 2018 — mrt 2022",
-        location: "Moskou, Rusland",
-        bullets: [
-          "Budgettering en controle van R&D-projecten.",
-          "Power BI dashboards voor R&D financiële rapportage.",
+          "Verantwoordelijk voor budgettering, maandrapportage en forecasting, inclusief variantieanalyse voor de directie.",
+          "Geïntegreerde modellen voor P&L, balans en kasstroom gebouwd en onderhouden voor meerjarenplanning.",
+          "Onrendabele langetermijnprojecten geïdentificeerd, waarmee ~$70 mln aan inefficiënte investeringen is voorkomen.",
+          "Werkkapitaal en voorraadstructuur geoptimaliseerd; ongebruikte voorraad met 15% verlaagd.",
         ],
       },
       {
         company: "Medinvestgroup",
-        role: "Head of Financial Analysis & Control",
-        period: "mei 2021 — dec 2022",
-        location: "Moskou, Rusland",
+        role: "Head of M&A",
+        period: "mrt 2021 — dec 2022",
+        meta: "Healthcare",
         bullets: [
-          "Drie M&A-deals afgerond aan koop- en verkoopzijde ($5M–$14M).",
-          "Financiële modellen en due diligence voor één van de TOP-5 private kliniekgroepen in Rusland ($206M omzet).",
-        ],
-      },
-      {
-        company: "Mosinzhproekt",
-        role: "Senior Specialist · Investeringen & Internationale Zaken",
-        period: "jun 2016 — mrt 2018",
-        location: "Moskou, Rusland",
-        bullets: [
-          "Vastgoedmarktanalyse en investeringsrapportage voor grote stedelijke projecten in Moskou.",
-          "Beheer van adviseursrelaties bij acquisities, desinvesteringen en contractcompliance.",
+          "Leiding gegeven aan een dealteam van twee personen bij drie transacties ($5–14 mln): waardering, due diligence en integratie.",
+          "Financiële modellen en investment cases opgesteld ter ondersteuning van groeibeslissingen.",
+          "Analyses geleverd die onrendabele activiteiten elimineerden, met ~$10 mln aan jaarlijkse besparingen.",
         ],
       },
     ],
+    educationLabel: "Opleiding & kwalificaties",
     education: [
       {
         school: "ESSEC Business School",
-        degree: "Master · Strategy & Management of International Business",
-        period: "2015 — 2016",
+        degree: "MSc, Strategy & Management of International Business",
+        place: "Parijs & Singapore",
+        year: "2016",
       },
       {
-        school: "Finance University under the Government of the Russian Federation",
-        degree: "Bachelor · Investment Management",
-        period: "2011 — 2015",
+        school: "Financial University under the Government of the Russian Federation",
+        degree: "BSc (Hons), Finance Management",
+        place: "Moskou",
+        year: "2015",
       },
     ],
-    certifications: [
+    credentials: [
+      "CFA — Level I behaald, 2022",
       "Financial Modeling & Valuation Analyst (FMVA®)",
-      "CFA Level I (feb 2022)",
     ],
-    certificationsLabel: "Certificeringen",
+    languagesLabel: "Talen",
+    languages:
+      "Russisch (moedertaal) · Engels (vloeiend) · Frans en Italiaans (goede beheersing) · Nederlands (in ontwikkeling)",
+    contactLabel: "Contact",
+    contactBody:
+      "Woonachtig in Amsterdam, open voor functies in FP&A, business partnering en corporate finance in Nederland.",
   },
 } as const;
 
@@ -349,6 +353,14 @@ export default function HomePage() {
   }, [theme, mounted]);
 
   const t = dict[lang];
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = t.seoTitle;
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", t.seoDescription);
+  }, [lang, t]);
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 transition-colors">
@@ -404,13 +416,25 @@ export default function HomePage() {
             <p className="mt-4 text-lg md:text-xl text-zinc-700 dark:text-zinc-300 max-w-xl">
               {t.title}
             </p>
+            <p className="mt-1 text-sm md:text-base text-zinc-500 max-w-xl">
+              {t.subtitle}
+            </p>
             <div className="mt-3 flex items-center gap-2 text-sm text-zinc-500">
               <PinIcon />
               {t.location}
             </div>
+            <p className="mt-6 text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-2xl">
+              {t.intro}
+            </p>
 
-            {/* Quick contact buttons */}
+            {/* CTA + quick contact buttons */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+              <a
+                href="#contact"
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors"
+              >
+                {t.ctaPrimary}
+              </a>
               <ContactButton
                 href="mailto:pavel@shimansky.nl"
                 label="Email"
@@ -426,11 +450,6 @@ export default function HomePage() {
                 label="Telegram"
                 icon={<TelegramIcon />}
               />
-              <ContactButton
-                href="https://instagram.com/p_shimansky"
-                label="Instagram"
-                icon={<InstagramIcon />}
-              />
             </div>
           </div>
         </div>
@@ -439,9 +458,35 @@ export default function HomePage() {
       <div className="mx-auto max-w-3xl px-6 pb-24 space-y-16 md:space-y-20">
         {/* About */}
         <Section label={t.aboutLabel}>
-          <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-base md:text-lg">
-            {t.about}
-          </p>
+          <div className="space-y-4">
+            {t.about.map((p, i) => (
+              <p
+                key={i}
+                className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-base md:text-lg"
+              >
+                {p}
+              </p>
+            ))}
+          </div>
+        </Section>
+
+        {/* Expertise */}
+        <Section label={t.expertiseLabel}>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {t.expertise.map((e) => (
+              <div
+                key={e.title}
+                className="p-4 rounded-lg bg-white/60 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800"
+              >
+                <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold text-sm mb-1.5">
+                  {e.title}
+                </h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+                  {e.body}
+                </p>
+              </div>
+            ))}
+          </div>
         </Section>
 
         {/* Experience */}
@@ -478,7 +523,7 @@ export default function HomePage() {
                       job.company
                     )}
                   </div>
-                  <div className="text-zinc-500 text-xs mb-3">{job.location}</div>
+                  <div className="text-zinc-500 text-xs mb-3">{job.meta}</div>
                   <ul className="space-y-2">
                     {job.bullets.map((b, j) => (
                       <li
@@ -508,63 +553,41 @@ export default function HomePage() {
                     {ed.school}
                   </h3>
                   <div className="text-zinc-500 text-xs font-mono tracking-wider">
-                    {ed.period}
+                    {ed.year}
                   </div>
                 </div>
                 <div className="text-zinc-600 dark:text-zinc-400 text-sm">
-                  {ed.degree}
+                  {ed.degree} · {ed.place}
                 </div>
               </div>
             ))}
           </div>
+          <ul className="mt-6 space-y-1.5">
+            {t.credentials.map((c) => (
+              <li
+                key={c}
+                className="text-zinc-600 dark:text-zinc-400 text-sm flex gap-2"
+              >
+                <span className="text-orange-500/70">✓</span>
+                {c}
+              </li>
+            ))}
+          </ul>
         </Section>
 
-        {/* Skills + Languages */}
-        <div className="grid md:grid-cols-2 gap-12">
-          <Section label={t.skillsLabel}>
-            <div className="flex flex-wrap gap-2">
-              {t.skills.map((s) => (
-                <span
-                  key={s}
-                  className="inline-flex items-center px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs"
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
-            <div className="mt-6">
-              <div className="text-zinc-500 text-[10px] font-mono tracking-[0.2em] uppercase mb-3">
-                {t.certificationsLabel}
-              </div>
-              <ul className="space-y-1.5">
-                {t.certifications.map((c) => (
-                  <li
-                    key={c}
-                    className="text-zinc-600 dark:text-zinc-400 text-sm flex gap-2"
-                  >
-                    <span className="text-orange-500/70">✓</span>
-                    {c}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Section>
-
-          <Section label={t.languagesLabel}>
-            <ul className="space-y-2">
-              {t.languages.map((l) => (
-                <li key={l.name} className="flex justify-between text-sm">
-                  <span className="text-zinc-800 dark:text-zinc-200">{l.name}</span>
-                  <span className="text-zinc-500">{l.level}</span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        </div>
+        {/* Languages */}
+        <Section label={t.languagesLabel}>
+          <p className="text-zinc-700 dark:text-zinc-300 text-sm md:text-base leading-relaxed">
+            {t.languages}
+          </p>
+        </Section>
 
         {/* Contact */}
-        <Section label={t.contactLabel}>
-          <div className="grid sm:grid-cols-2 gap-3">
+        <Section id="contact" label={t.contactLabel}>
+          <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-5">
+            {t.contactBody}
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3">
             <ContactCard
               href="mailto:pavel@shimansky.nl"
               label="Email"
@@ -583,12 +606,6 @@ export default function HomePage() {
               value="@shimansky"
               icon={<TelegramIcon />}
             />
-            <ContactCard
-              href="https://instagram.com/p_shimansky"
-              label="Instagram"
-              value="@p_shimansky"
-              icon={<InstagramIcon />}
-            />
           </div>
         </Section>
 
@@ -602,14 +619,16 @@ export default function HomePage() {
 }
 
 function Section({
+  id,
   label,
   children,
 }: {
+  id?: string;
   label: string;
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section id={id} className="scroll-mt-20">
       <div className="text-orange-600 dark:text-orange-400/80 text-[10px] md:text-xs font-mono tracking-[0.3em] uppercase mb-5">
         — {label}
       </div>
@@ -725,22 +744,6 @@ function TelegramIcon() {
   return (
     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
       <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
-    </svg>
-  );
-}
-
-function InstagramIcon() {
-  return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      viewBox="0 0 24 24"
-    >
-      <rect x="2.5" y="2.5" width="19" height="19" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }

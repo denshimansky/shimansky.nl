@@ -8,18 +8,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Pavel Shimansky — FP&A & Corporate Finance Professional",
+  title: "Pavel Shimansky — Corporate Finance & FP&A, Amsterdam",
   description:
-    "Pavel Shimansky · FP&A and Corporate Finance professional with 9+ years of experience. Currently at KYOCERA Document Solutions Europe in Amsterdam.",
+    "FP&A, business partnering and corporate finance professional in Amsterdam. Planning and performance management, M&A, and finance automation with Power BI, Power Automate and AI tooling.",
   metadataBase: new URL("https://shimansky.nl"),
   openGraph: {
     type: "profile",
     locale: "en_US",
     url: "https://shimansky.nl",
     siteName: "Pavel Shimansky",
-    title: "Pavel Shimansky — FP&A & Corporate Finance Professional",
+    title: "Pavel Shimansky — Corporate Finance & FP&A, Amsterdam",
     description:
-      "FP&A and Corporate Finance professional with 9+ years of experience. Amsterdam, Netherlands.",
+      "FP&A, business partnering and corporate finance professional in Amsterdam. Planning and performance management, M&A, and finance automation with Power BI, Power Automate and AI tooling.",
     images: [
       {
         url: "/pavel.jpg",
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Pavel Shimansky — FP&A & Corporate Finance Professional",
+    title: "Pavel Shimansky — Corporate Finance & FP&A, Amsterdam",
     description:
-      "FP&A and Corporate Finance professional. Amsterdam, Netherlands.",
+      "FP&A, business partnering and corporate finance professional in Amsterdam. Planning and performance management, M&A, and finance automation with Power BI, Power Automate and AI tooling.",
     images: ["/pavel.jpg"],
   },
 };
