@@ -110,6 +110,10 @@ const dict = {
     languagesLabel: "Languages",
     languages:
       "Russian (native) · English (fluent) · French and Italian (upper-intermediate) · Dutch (learning)",
+    petLabel: "Pet project",
+    petTitle: "Bookshelf & records",
+    petBody:
+      "A web app for cataloguing my home library and vinyl records — barcode scanning, Goodreads ratings, search and stats.",
     contactLabel: "Contact",
     contactBody:
       "Based in Amsterdam, open to FP&A, business partnering and corporate finance roles in the Netherlands.",
@@ -214,6 +218,10 @@ const dict = {
     languagesLabel: "Языки",
     languages:
       "Русский (родной) · английский (свободно) · французский и итальянский (выше среднего) · нидерландский (изучаю)",
+    petLabel: "Пет-проект",
+    petTitle: "Книжная полка и пластинки",
+    petBody:
+      "Веб-приложение для каталога домашней библиотеки и виниловых пластинок — сканер штрихкодов, рейтинги Goodreads, поиск и статистика.",
     contactLabel: "Контакты",
     contactBody:
       "Живу в Амстердаме, открыт к позициям в FP&A, бизнес-партнёрстве и корпоративных финансах в Нидерландах.",
@@ -318,6 +326,10 @@ const dict = {
     languagesLabel: "Talen",
     languages:
       "Russisch (moedertaal) · Engels (vloeiend) · Frans en Italiaans (goede beheersing) · Nederlands (in ontwikkeling)",
+    petLabel: "Hobbyproject",
+    petTitle: "Bookshelf & records",
+    petBody:
+      "Een webapp om mijn thuisbibliotheek en vinylcollectie te catalogiseren — barcodescanner, Goodreads-ratings, zoeken en statistieken.",
     contactLabel: "Contact",
     contactBody:
       "Woonachtig in Amsterdam, open voor functies in FP&A, business partnering en corporate finance in Nederland.",
@@ -335,6 +347,16 @@ export default function HomePage() {
   const [lang, setLang] = useState<Lang>("en");
 
   const t = dict[lang];
+
+  // /collection is a separate app on the same origin that reads its language from
+  // localStorage ("ru" or "en"); open it in Russian for RU, otherwise in English.
+  const rememberCollectionLang = () => {
+    try {
+      localStorage.setItem("bookshelf.lang", lang === "ru" ? "ru" : "en");
+    } catch {
+      /* storage unavailable */
+    }
+  };
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -549,6 +571,25 @@ export default function HomePage() {
           <p className="text-zinc-700 text-sm md:text-base leading-relaxed">
             {t.languages}
           </p>
+        </Section>
+
+        {/* Pet project */}
+        <Section label={t.petLabel}>
+          <a
+            href="/collection"
+            onClick={rememberCollectionLang}
+            onAuxClick={rememberCollectionLang}
+            className="block p-4 rounded-lg bg-white/60 border border-zinc-200 hover:bg-orange-500/5 hover:border-orange-500/30 transition-all group"
+          >
+            <h3 className="text-zinc-900 font-semibold text-sm mb-1.5">
+              {t.petTitle}
+            </h3>
+            <p className="text-zinc-600 text-sm leading-relaxed">{t.petBody}</p>
+            <div className="mt-3 text-orange-600 text-sm font-medium inline-flex items-center gap-1">
+              shimansky.nl/collection
+              <ExternalIcon />
+            </div>
+          </a>
         </Section>
 
         {/* Contact */}
