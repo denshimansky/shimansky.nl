@@ -348,34 +348,20 @@ export default function HomePage() {
 
   const t = dict[lang];
 
-  // Hovering the photo makes it sway in 3D like a coin; on leave it eases back flat.
+  // The photo turns toward the cursor like a coin while it moves over the hero; flat again on leave.
   const photoRef = useRef<HTMLImageElement>(null);
-  const coinSpin = useRef<Animation | null>(null);
-  const startCoinSpin = () => {
+  const tiltPhoto = (e: React.MouseEvent<HTMLElement>) => {
     const el = photoRef.current;
-    if (!el || coinSpin.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    coinSpin.current = el.animate(
-      [
-        { transform: "rotateY(0deg) rotateX(0deg)", easing: "ease-out" },
-        { transform: "rotateY(28deg) rotateX(5deg)", offset: 0.25, easing: "ease-in-out" },
-        { transform: "rotateY(-28deg) rotateX(-5deg)", offset: 0.75, easing: "ease-in" },
-        { transform: "rotateY(0deg) rotateX(0deg)" },
-      ],
-      { duration: 3200, iterations: Infinity },
-    );
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const area = e.currentTarget.getBoundingClientRect();
+    const photo = el.getBoundingClientRect();
+    const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+    const x = clamp((e.clientX - (photo.left + photo.width / 2)) / (area.width / 2));
+    const y = clamp((e.clientY - (photo.top + photo.height / 2)) / (area.height / 2));
+    el.style.transform = `rotateY(${x * 28}deg) rotateX(${-y * 18}deg)`;
   };
-  const stopCoinSpin = () => {
-    const el = photoRef.current;
-    const spin = coinSpin.current;
-    if (!el || !spin) return;
-    const current = getComputedStyle(el).transform;
-    spin.cancel();
-    coinSpin.current = null;
-    el.animate([{ transform: current }, { transform: "none" }], {
-      duration: 500,
-      easing: "ease-out",
-    });
+  const resetPhoto = () => {
+    if (photoRef.current) photoRef.current.style.transform = "";
   };
 
   // /collection is a separate app on the same origin that reads its language from
@@ -425,7 +411,11 @@ export default function HomePage() {
       </div>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section
+        className="relative overflow-hidden"
+        onMouseMove={tiltPhoto}
+        onMouseLeave={resetPhoto}
+      >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.08),transparent_70%)]" />
         <div className="relative mx-auto max-w-3xl px-6 pt-6 md:pt-12 pb-10 md:pb-12">
           <div className="flex flex-col items-center text-center">
@@ -433,11 +423,9 @@ export default function HomePage() {
               <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-orange-500/30 to-transparent blur-xl" />
               <img
                 ref={photoRef}
-                onMouseEnter={startCoinSpin}
-                onMouseLeave={stopCoinSpin}
                 src="/pavel.jpg"
                 alt="Pavel Shimansky"
-                className="relative h-24 w-24 md:h-36 md:w-36 rounded-full object-cover ring-2 ring-zinc-200 shadow-2xl"
+                className="relative h-24 w-24 md:h-36 md:w-36 rounded-full object-cover ring-2 ring-zinc-200 shadow-2xl transition-transform duration-300 ease-out"
               />
             </div>
             <h1 className="mt-5 text-4xl md:text-6xl font-bold tracking-tight text-zinc-900">
