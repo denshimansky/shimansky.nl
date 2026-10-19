@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   async rewrites() {
-    return [{ source: "/collection", destination: "/collection/index.html" }];
+    return [
+      { source: "/collection", destination: "/collection/index.html" },
+      { source: "/fitness", destination: "/fitness/index.html" },
+    ];
   },
 };
 
