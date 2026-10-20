@@ -1,5 +1,5 @@
 import * as api from './api.js';
-import { h, mount, icon, toast } from './ui.js';
+import { h, mount, icon, toast, enterFrom } from './ui.js';
 import { todayIn } from './shared/dates.js';
 import * as today from './views/today.js';
 import * as workout from './views/workout.js';
@@ -22,6 +22,7 @@ const REDIRECTS = { tests: '#/progress/tests' };
 export const app = {
   boot: null,
   today: null,
+  enterDir: 0,
   async reloadBoot() {
     const { data } = await api.get('bootstrap');
     app.boot = data;
@@ -60,6 +61,8 @@ async function render() {
     await VIEWS[route.name].render(container, route.args, app);
     if (seq !== renderSeq) return;
     mount(main, container);
+    enterFrom(container, app.enterDir);
+    app.enterDir = 0;
   } catch (e) {
     if (seq !== renderSeq) return;
     mount(main, h('div', { class: 'view' }, h('p', { class: 'error-box' }, e.message)));
@@ -84,6 +87,9 @@ function showNotices(list = []) {
   toast(fresh[0], 'warn');
   try { localStorage.setItem('fit:notices-seen', JSON.stringify([...seen, ...fresh])); } catch { /* нет хранилища */ }
 }
+
+// iOS включает :active (мгновенный отклик на нажатие) только при наличии обработчика touchstart.
+document.addEventListener('touchstart', () => {}, { passive: true });
 
 function buildNav() {
   mount(nav, NAV.map(([id, label]) => h('a', { href: `#/${id}`, 'data-view': id }, icon(id), h('span', null, label))));

@@ -154,6 +154,7 @@ export async function render(container, args, app) {
     return [it.id, !hasMain && !!hasSub];
   }));
   const extraRows = new Map();
+  let justSaved = null;
 
   const ensureSession = () => {
     if (!session) {
@@ -235,8 +236,10 @@ export async function render(container, args, app) {
         api.write('PUT', `sessions/${sid}/sets/${exId}/${n}`, body);
         sets.set(key, { exercise_id: exId, set_no: n, ...body });
         drafts.delete(key);
+        justSaved = key;
         if (kind !== 'cardio') startRest(kind === 'weight_reps' && repMax && repMax <= 6 ? 180 : kind === 'time_sec' ? 60 : 90);
         redraw();
+        justSaved = null;
       };
       const remove = () => {
         if (!session) return;
@@ -251,7 +254,7 @@ export async function render(container, args, app) {
         h('span', { class: 'x' }, inputs[1] ? '×' : ''),
         inputs[1] || h('span'),
         rirSel || h('span'),
-        h('button', { class: ['check-btn', saved ? 'on' : ''], 'aria-label': saved ? `Пересохранить подход ${n}` : `Записать подход ${n}`, onclick: commit }, '✓'),
+        h('button', { class: ['check-btn', saved ? 'on' : '', key === justSaved ? 'just' : ''], 'aria-label': saved ? `Пересохранить подход ${n}` : `Записать подход ${n}`, onclick: commit }, '✓'),
         saved ? h('button', { class: 'icon-btn small', 'aria-label': `Удалить подход ${n}`, onclick: remove }, '✕') : h('span', { class: 'icon-btn small placeholder' }));
     };
 

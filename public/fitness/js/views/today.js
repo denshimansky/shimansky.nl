@@ -1,7 +1,7 @@
 // Экран «Сегодня»: ежедневный ввод за 30 секунд.
 
 import * as api from '../api.js';
-import { h, mount, sheet, toast } from '../ui.js';
+import { h, mount, sheet, toast, swipePager } from '../ui.js';
 import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate, isoWeekday } from '../shared/dates.js';
 import { dayContext, scheduledWorkoutId, weeklyCardioTarget } from '../shared/calc.js';
 import { calorieSource, effectiveTargets, beerLimit } from '../shared/nutrition.js';
@@ -31,7 +31,11 @@ export async function render(container, args, app) {
   const pull = { ...(data.pullups || { sets: 0, reps_total: 0 }) };
   for (const op of api.pending()) if (op.method === 'PUT' && op.path === `pullups/${date}`) Object.assign(pull, op.body);
 
-  const go = (d) => app.go(d === app.today ? '#/today' : `#/today/${d}`);
+  // Новый день въезжает с той стороны, куда ушёл текущий.
+  const go = (d) => {
+    app.enterDir = d > date ? 1 : -1;
+    app.go(d === app.today ? '#/today' : `#/today/${d}`);
+  };
 
   const header = h('header', { class: 'day-head' },
     h('button', { class: 'icon-btn', 'aria-label': 'Предыдущий день', onclick: () => go(addDays(date, -1)) }, '‹'),
@@ -125,7 +129,7 @@ export async function render(container, args, app) {
       h('div', { class: 'seg' },
         h('button', { class: ['seg-btn', v === 0 ? 'on good' : ''], 'aria-pressed': String(v === 0), onclick: () => pick(0) }, 'Нет'),
         h('button', { class: ['seg-btn', v === 1 ? 'on warn' : ''], 'aria-pressed': String(v === 1), onclick: () => pick(1) }, 'Было')),
-      h('span', { class: 'muted' }, `вечеров на неделе: ${count} из ${limit}`),
+      h('span', { class: 'muted' }, `вечеров за неделю: ${count} из ${limit}`),
       count > limit ? h('span', { class: 'muted small' }, 'Сверх лимита — не страшно, просто учтём в неделе.') : null);
   }
 
@@ -203,20 +207,13 @@ export async function render(container, args, app) {
   }
   draw();
 
-  // Свайп влево-вправо листает дни.
-  let x0 = null;
-  let y0 = null;
-  container.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
-  container.addEventListener('touchend', (e) => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    const dy = e.changedTouches[0].clientY - y0;
-    x0 = null;
-    if (Math.abs(dx) > 70 && Math.abs(dy) < 50) {
-      if (dx > 0) go(addDays(date, -1));
-      else if (date < app.today) go(addDays(date, 1));
-    }
-  }, { passive: true });
+  // Свайп листает дни: день едет за пальцем, бросок решает; дальше сегодня — резиновый край.
+  swipePager(container, {
+    canPrev: () => true,
+    canNext: () => date < app.today,
+    onPrev: () => go(addDays(date, -1)),
+    onNext: () => go(addDays(date, 1)),
+  });
 
   if (stale && !api.status().online) toast('Нет сети — ввод сохранится и уйдёт позже');
   // Локальный режим: данные только на телефоне — раз в неделю просим сохранить копию.

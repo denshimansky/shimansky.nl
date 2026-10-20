@@ -1,9 +1,9 @@
 // Service worker: оболочка приложения работает без сети. Данные API кэширует сам клиент (js/api.js).
 // VERSION, BASE и ASSETS подставляет сервер при отдаче файла.
 
-const VERSION = "bf8d7cbb8f1d";
+const VERSION = "b87626039c09";
 const BASE = "/fitness";
-const ASSETS = ["app.css","icons/icon-180.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg","js/api.js","js/app.js","js/backup.js","js/chart.js","js/local/backend.js","js/local/persist.js","js/passkey.js","js/shared/calc.js","js/shared/csv.js","js/shared/dates.js","js/shared/importer.js","js/shared/macrofactor.js","js/shared/migrate.js","js/shared/nutrition.js","js/shared/seed.js","js/shared/validate.js","js/shared/xlsx.js","js/ui.js","js/views/checkin.js","js/views/nutrition.js","js/views/progress.js","js/views/settings.js","js/views/tests.js","js/views/today.js","js/views/workout.js","manifest.webmanifest"];
+const ASSETS = ["app.css","icons/icon-180.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg","js/api.js","js/app.js","js/backup.js","js/chart.js","js/local/backend.js","js/local/persist.js","js/motion.js","js/passkey.js","js/shared/calc.js","js/shared/csv.js","js/shared/dates.js","js/shared/importer.js","js/shared/macrofactor.js","js/shared/migrate.js","js/shared/nutrition.js","js/shared/seed.js","js/shared/validate.js","js/shared/xlsx.js","js/ui.js","js/views/checkin.js","js/views/nutrition.js","js/views/progress.js","js/views/settings.js","js/views/tests.js","js/views/today.js","js/views/workout.js","manifest.webmanifest"];
 const CACHE = `fit-${VERSION}`;
 const APP = BASE || '/';
 const SHELL = 'shell';
