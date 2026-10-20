@@ -6,8 +6,9 @@ import * as workout from './views/workout.js';
 import * as nutrition from './views/nutrition.js';
 import * as progress from './views/progress.js';
 import * as settings from './views/settings.js';
+import * as checkin from './views/checkin.js';
 
-const VIEWS = { today, workout, nutrition, progress, settings };
+const VIEWS = { today, workout, nutrition, progress, settings, checkin };
 const NAV = [
   ['today', 'Сегодня'],
   ['workout', 'Тренировка'],

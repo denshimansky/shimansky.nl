@@ -2,9 +2,9 @@
 
 import * as api from '../api.js';
 import { h, mount, sheet, toast } from '../ui.js';
-import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate } from '../shared/dates.js';
+import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate, isoWeekday } from '../shared/dates.js';
 import { dayContext, scheduledWorkoutId, weeklyCardioTarget } from '../shared/calc.js';
-import { calorieSource, effectiveTargets } from '../shared/nutrition.js';
+import { calorieSource, effectiveTargets, beerLimit } from '../shared/nutrition.js';
 import { needsBackup, daysSinceBackup, saveBackup } from '../backup.js';
 
 const FIELDS = [
@@ -27,6 +27,9 @@ export async function render(container, args, app) {
   ctx.targets = effectiveTargets(ctx.targets, calorieSource(settings, (app.boot.nutrition?.imports || 0) > 0), data.mf_target);
   const log = { ...data.log };
   for (const op of api.pending()) if (op.method === 'PATCH' && op.path === `day/${date}`) Object.assign(log, op.body);
+  const savedBeer = data.log.beer_chips === 1 ? 1 : 0;
+  const pull = { ...(data.pullups || { sets: 0, reps_total: 0 }) };
+  for (const op of api.pending()) if (op.method === 'PUT' && op.path === `pullups/${date}`) Object.assign(pull, op.body);
 
   const go = (d) => app.go(d === app.today ? '#/today' : `#/today/${d}`);
 
@@ -114,11 +117,44 @@ export async function render(container, args, app) {
   function beerCard() {
     const v = log.beer_chips;
     const pick = (val) => save({ beer_chips: v === val ? null : val });
+    // Бюджет недели: 2 вечера, в фазе 4 — 1. Сверх лимита — спокойная подсказка, без красного.
+    const count = (data.week_beer ?? 0) - savedBeer + (v === 1 ? 1 : 0);
+    const limit = beerLimit(ctx.phase?.phase_no ?? null);
     return h('div', { class: 'card metric' },
       h('span', { class: 'metric-label' }, 'Пиво / чипсы'),
       h('div', { class: 'seg' },
         h('button', { class: ['seg-btn', v === 0 ? 'on good' : ''], 'aria-pressed': String(v === 0), onclick: () => pick(0) }, 'Нет'),
-        h('button', { class: ['seg-btn', v === 1 ? 'on warn' : ''], 'aria-pressed': String(v === 1), onclick: () => pick(1) }, 'Было')));
+        h('button', { class: ['seg-btn', v === 1 ? 'on warn' : ''], 'aria-pressed': String(v === 1), onclick: () => pick(1) }, 'Было')),
+      h('span', { class: 'muted' }, `вечеров на неделе: ${count} из ${limit}`),
+      count > limit ? h('span', { class: 'muted small' }, 'Сверх лимита — не страшно, просто учтём в неделе.') : null);
+  }
+
+  // Подтягивания дома: «+1 подход» на 1–3 повтора, сумма за день.
+  function pullupCard() {
+    const add = (reps) => {
+      pull.sets += 1;
+      pull.reps_total += reps;
+      api.write('PUT', `pullups/${date}`, { sets: pull.sets, reps_total: pull.reps_total });
+      draw();
+    };
+    const open = () => {
+      const close = sheet('Подход подтягиваний', h('div', { class: 'sheet-body' },
+        h('p', { class: 'muted' }, 'Сколько повторов?'),
+        h('div', { class: 'seg big' }, [1, 2, 3].map((n) => h('button', { class: 'seg-btn', onclick: () => { add(n); close(); } }, String(n)))),
+        pull.sets ? h('button', { class: 'link-btn', onclick: () => {
+          if (!confirm('Обнулить подтягивания за этот день?')) return;
+          pull.sets = 0;
+          pull.reps_total = 0;
+          api.write('PUT', `pullups/${date}`, { sets: 0, reps_total: 0 });
+          close();
+          draw();
+        } }, 'Обнулить день') : null));
+    };
+    return h('div', { class: ['card', 'metric', pull.sets ? '' : 'empty'] },
+      h('span', { class: 'metric-label' }, 'Подтягивания дома'),
+      h('span', { class: 'metric-value' }, pull.reps_total ? String(pull.reps_total) : '—', pull.reps_total ? h('small', null, ' повт.') : null),
+      h('span', { class: 'muted' }, pull.sets ? `подходов: ${pull.sets}` : 'турник дома'),
+      h('button', { class: 'btn small', onclick: open }, '+1 подход'));
   }
 
   function workoutBlock() {
@@ -160,7 +196,7 @@ export async function render(container, args, app) {
   }
 
   function draw() {
-    mount(grid, FIELDS.map(card), beerCard());
+    mount(grid, FIELDS.map(card), beerCard(), pullupCard());
     mount(extra,
       h('button', { class: 'note-row', onclick: openNote }, h('span', { class: 'muted' }, 'Заметка'), h('span', null, log.note || 'добавить')),
       workoutBlock());
@@ -198,5 +234,10 @@ export async function render(container, args, app) {
       } }, 'Сохранить'));
   }
 
-  mount(container, header, reminder, grid, extra);
+  // Воскресенье: чек-ин недели, пока не пройден.
+  const week = weekly.find((w) => w.week_no === ctx.week);
+  const checkin = date === app.today && isoWeekday(date) === 7 && !week?.checkin_at
+    ? h('a', { class: 'btn primary wide', href: '#/checkin' }, 'Воскресный чек-ин →') : null;
+
+  mount(container, header, reminder, checkin, grid, extra);
 }

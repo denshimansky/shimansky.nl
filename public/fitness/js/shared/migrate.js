@@ -1,9 +1,11 @@
-// Миграция данных v2 (программы из «Плана формы к лету 2027») — общие решения для сервера и локального режима.
+// Миграции данных — общие решения для сервера и локального режима:
+// v2 — фазы, справочник и программы из «Плана формы к лету 2027»; v3 — целевой вес 77 кг, если не задан.
 // Применяют их src/migrate.js (SQLite) и js/local/backend.js (state в IndexedDB).
 
 import { DEFAULT_PHASES, LEGACY_PHASES, PHASE_FIELDS, DEFAULT_EXERCISES } from './seed.js';
 
-export const DATA_VERSION = 2;
+export const DATA_VERSION = 3;
+export const DEFAULT_GOAL_WEIGHT = 77;
 export const PHASES_NOTICE = 'Цели фаз отличаются от плана — проверьте настройки';
 
 const same = (a, b) => PHASE_FIELDS.every((k) => Number(a?.[k]) === Number(b?.[k]));

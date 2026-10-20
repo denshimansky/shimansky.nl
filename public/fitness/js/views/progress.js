@@ -52,7 +52,8 @@ export async function render(container, args, app) {
     h('dl', { class: 'kv' },
       h('dt', null, 'Средний вес'), h('dd', null, cur?.weight_kg !== null && cur?.weight_kg !== undefined ? `${fmtNum(cur.weight_kg, 2)} кг` : '—', cur ? h('span', { class: 'muted' }, ` · дней ${cur.days}`) : null),
       evalRow ? [h('dt', null, `Темп недели ${evalWeek}`), h('dd', null, evalRow.weight_change !== null ? `${fmtSigned(evalRow.weight_change, 2)} кг ` : '— ', signalChip(evalRow.signal))] : null,
-      h('dt', null, 'Тренировки'), h('dd', null, cur ? `${cur.done_sessions} из ${cur.planned_sessions}` : '—')),
+      h('dt', null, 'Тренировки'), h('dd', null, cur ? `${cur.done_sessions} из ${cur.planned_sessions}` : '—'),
+      h('dt', null, 'Подтягивания дома'), h('dd', null, cur?.pullup_reps ? `${cur.pullup_reps} повт. за ${cur.pullup_sets} подх.` : '—')),
     h('p', { class: 'label' }, 'Талия на этой неделе'),
     waistInput(currentWeek, cur?.waist_cm));
 
@@ -93,11 +94,11 @@ export async function render(container, args, app) {
   const table = h('section', { class: 'card' },
     h('h2', null, 'Недели'),
     h('div', { class: 'table-wrap' }, h('table', { class: 'table weeks' },
-      h('thead', null, h('tr', null, ['Нед', 'Вес', 'Δ', 'Сигнал', 'ккал', 'Белок', 'Шаги', 'Сон', 'Талия', 'Трен.'].map((t) => h('th', null, t)))),
+      h('thead', null, h('tr', null, ['Нед', 'Вес', 'Δ', 'Сигнал', 'ккал', 'Белок', 'Шаги', 'Сон', 'Талия', 'Трен.', 'Подт.'].map((t) => h('th', null, t)))),
       h('tbody', null, [...shown].reverse().map((r) => h('tr', { class: [r.week === currentWeek ? 'current' : '', r.is_deload ? 'deload' : ''], tabindex: 0, onclick: () => openWeek(r), onkeydown: (e) => { if (e.key === 'Enter') openWeek(r); } },
         h('td', null, r.week), h('td', null, fmtNum(r.weight_kg, 2)), h('td', null, fmtSigned(r.weight_change, 2)), h('td', null, signalChip(r.signal) || '—'),
         h('td', null, fmtNum(r.kcal, 0)), h('td', null, fmtNum(r.protein_g, 0)), h('td', null, fmtNum(r.steps, 0)), h('td', null, fmtNum(r.sleep_h, 1)),
-        h('td', null, fmtNum(r.waist_cm, 1)), h('td', null, `${r.done_sessions}/${r.planned_sessions}`)))))),
+        h('td', null, fmtNum(r.waist_cm, 1)), h('td', null, `${r.done_sessions}/${r.planned_sessions}`), h('td', null, r.pullup_reps || '—')))))),
     h('p', { class: 'muted small' }, 'Нажмите на неделю, чтобы увидеть её дни.'));
 
   const testsBox = h('section', { id: 'tests', class: 'tests-section' });

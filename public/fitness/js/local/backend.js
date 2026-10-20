@@ -1,11 +1,11 @@
 // Локальный режим: те же адреса и ответы, что у серверного API (src/api.js),
 // но данные лежат в объекте state, который js/local/persist.js хранит в IndexedDB на устройстве.
 
-import { todayIn, weekNo, weekRange } from '../shared/dates.js';
+import { todayIn, weekNo, weekRange, addDays } from '../shared/dates.js';
 import { weeklySummary, calorieRecommendation } from '../shared/calc.js';
 import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode, exerciseKind, repRange, subRepRange, calorieSourceValue, nutritionMergeValue } from '../shared/validate.js';
 import { DEFAULT_SETTINGS, DEFAULT_PHASES, DEFAULT_DELOAD_WEEKS, DEFAULT_EXERCISES, DEFAULT_WORKOUTS, DEFAULT_SCHEDULE } from '../shared/seed.js';
-import { DATA_VERSION, planPhases, keepExercise, retiredWorkout } from '../shared/migrate.js';
+import { DATA_VERSION, DEFAULT_GOAL_WEIGHT, planPhases, keepExercise, retiredWorkout } from '../shared/migrate.js';
 import { importNutrition, mergeRules, importsView, cleanMapping, NUTRITION_COLUMNS } from '../shared/macrofactor.js';
 import { calorieSource, mfTargetFor } from '../shared/nutrition.js';
 import { TABLE_COLUMNS, toCsv } from '../shared/csv.js';
@@ -48,7 +48,7 @@ function installPrograms(st) {
 
 export function initialState(now = new Date().toISOString()) {
   const weekly = {};
-  for (const w of DEFAULT_DELOAD_WEEKS) weekly[w] = { week_no: w, waist_cm: null, planned_sessions: null, is_deload: 1 };
+  for (const w of DEFAULT_DELOAD_WEEKS) weekly[w] = { week_no: w, waist_cm: null, planned_sessions: null, is_deload: 1, checkin_at: null };
   const st = {
     format: STATE_FORMAT,
     version: DATA_VERSION,
@@ -75,6 +75,8 @@ export function ensureShape(st) {
   st.nutrition_daily ??= {};
   st.nutrition_imports ??= {};
   st.nutrition_mapping ??= {};
+  st.pullup_practice ??= {};
+  for (const w of Object.values(st.weekly_log)) w.checkin_at ??= null;
   st.settings.calorie_source ??= null;
   st.settings.nutrition_merge ??= null;
   return st;
@@ -95,6 +97,7 @@ export function migrateState(st) {
     }
     installPrograms(st);
   }
+  if (st.version < 3) st.settings.goal_weight_kg ??= DEFAULT_GOAL_WEIGHT;
   st.version = DATA_VERSION;
   return true;
 }
@@ -151,6 +154,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       sessions: Object.values(st.sessions).map((s) => ({ date: s.date, completed_at: s.completed_at })),
       schedule: st.schedule,
       tests: Object.values(st.tests),
+      pullups: Object.values(st.pullup_practice),
     };
   }
 
@@ -190,6 +194,13 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     return ids.size;
   }
 
+  function weekBeer(date) {
+    const week = weekNo(date, S().settings.week1_start);
+    const start = S().settings.week1_start;
+    const { from, to } = week === 0 ? { from: addDays(start, -7), to: addDays(start, -1) } : weekRange(week, start);
+    return Object.values(S().daily_log).filter((d) => d.date >= from && d.date <= to && d.beer_chips === 1).length;
+  }
+
   function nutritionStatus() {
     const imports = Object.values(S().nutrition_imports);
     const last = imports.sort((a, c) => (a.imported_at < c.imported_at ? 1 : -1))[0] || null;
@@ -211,7 +222,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
   };
 
   function ensureWeek(week) {
-    if (!S().weekly_log[week]) S().weekly_log[week] = { week_no: week, waist_cm: null, planned_sessions: null, is_deload: 0 };
+    if (!S().weekly_log[week]) S().weekly_log[week] = { week_no: week, waist_cm: null, planned_sessions: null, is_deload: 0, checkin_at: null };
     return S().weekly_log[week];
   }
 
@@ -292,6 +303,8 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       week: weekNo(date, S().settings.week1_start),
       sessions: Object.values(S().sessions).filter((s) => s.date === date).map(({ id, workout_id, completed_at }) => ({ id, workout_id, completed_at })),
       week_cardio: weekCardio(date),
+      week_beer: weekBeer(date),
+      pullups: S().pullup_practice[date] ? { sets: S().pullup_practice[date].sets, reps_total: S().pullup_practice[date].reps_total } : { sets: 0, reps_total: 0 },
       mf_target: mfTargetFor(date, Object.values(S().nutrition_daily)),
     };
   });
@@ -401,6 +414,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     if ('waist_cm' in body) w.waist_cm = num(body.waist_cm, WAIST, 'waist_cm');
     if ('planned_sessions' in body) w.planned_sessions = intOrNull(body.planned_sessions, 0, 14, 'planned_sessions');
     if ('is_deload' in body) w.is_deload = body.is_deload ? 1 : 0;
+    if ('checkin_done' in body) w.checkin_at = body.checkin_done ? (body.checkin_at || now().toISOString()) : null;
     return { week: { ...w } };
   });
 
@@ -556,6 +570,14 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     }
   });
 
+  // ——— Подтягивания дома ———
+  route('PUT', '/pullups/:date', ({ params, body }) => {
+    const date = requireDate(params.date);
+    const rec = { date, sets: intOrNull(body.sets, 0, 200, 'sets') ?? 0, reps_total: intOrNull(body.reps_total, 0, 2000, 'reps_total') ?? 0 };
+    S().pullup_practice[date] = rec;
+    return { pullups: { ...rec } };
+  });
+
   // ——— Питание (MacroFactor) ———
   route('POST', '/nutrition/import', async ({ raw, query }) => {
     if (!raw || raw.byteLength < 10) throw bad('Пустой файл');
@@ -625,6 +647,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       set_logs: Object.values(st.set_logs).sort((a, c) => (a.session_id < c.session_id ? -1 : a.session_id > c.session_id ? 1 : a.exercise_id - c.exercise_id || a.set_no - c.set_no)),
       tests: Object.values(st.tests).sort((a, c) => a.week_no - c.week_no),
       nutrition_daily: Object.values(st.nutrition_daily).sort((a, c) => (a.date < c.date ? -1 : 1)),
+      pullup_practice: Object.values(st.pullup_practice).sort((a, c) => (a.date < c.date ? -1 : 1)),
     }[table];
     return toCsv(cols, rows);
   };

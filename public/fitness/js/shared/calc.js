@@ -77,7 +77,7 @@ export function plannedSessionsDefault(week, phases, schedule) {
 }
 
 // Сводка по неделям 0…N: как лист «Недели» Excel-трекера.
-export function weeklySummary({ settings, phases, daily, weekly = [], sessions = [], schedule = [], tests = [], lastWeek }) {
+export function weeklySummary({ settings, phases, daily, weekly = [], sessions = [], schedule = [], tests = [], pullups = [], lastWeek }) {
   const avgs = weeklyAverages(daily, settings);
   const weeklyMap = new Map(weekly.map((w) => [w.week_no, w]));
   const testsMap = new Map(tests.map((t) => [t.week_no, t]));
@@ -90,6 +90,14 @@ export function weeklySummary({ settings, phases, daily, weekly = [], sessions =
     if (!s.completed_at) continue;
     const w = weekNo(s.date, settings.week1_start);
     done.set(w, (done.get(w) || 0) + 1);
+  }
+
+  // Подтягивания дома: сумма повторов и подходов за неделю.
+  const pull = new Map();
+  for (const p of pullups) {
+    const w = weekNo(p.date, settings.week1_start);
+    const cur = pull.get(w) || { reps: 0, sets: 0 };
+    pull.set(w, { reps: cur.reps + (p.reps_total || 0), sets: cur.sets + (p.sets || 0) });
   }
 
   const rows = [];
@@ -122,6 +130,9 @@ export function weeklySummary({ settings, phases, daily, weekly = [], sessions =
       // Расчёт 10: факт тренировок — число завершённых sessions, сравнивается с планом.
       planned_sessions: wl.planned_sessions ?? plannedSessionsDefault(w, phases, schedule),
       done_sessions: done.get(w) || 0,
+      pullup_reps: pull.get(w)?.reps ?? 0,
+      pullup_sets: pull.get(w)?.sets ?? 0,
+      checkin_at: wl.checkin_at ?? null,
     });
   }
   return rows;

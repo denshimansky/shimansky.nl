@@ -1,7 +1,8 @@
 // Начальные данные при первом запуске (общие для сервера и локального режима). Всё это потом меняется в «Настройках» без деплоя.
 // Фазы, программы и расписание — из документа «План формы к лету 2027».
 
-export const DEFAULT_SETTINGS = { week1_start: '2026-10-26', timezone: 'Europe/Amsterdam', goal_weight_kg: null, goal_waist_cm: null };
+// Целевой вес — 77 кг (ориентир 76–78); целевая талия — пусто до первого замера.
+export const DEFAULT_SETTINGS = { week1_start: '2026-10-26', timezone: 'Europe/Amsterdam', goal_weight_kg: 77, goal_waist_cm: null };
 
 export const DEFAULT_PHASES = [
   { phase_no: 1, name: 'Фаза 1', week_from: 1, week_to: 6, kcal_target: 2300, protein_target_g: 155, steps_target: 9000, pace_limit_kg: 0.5 },

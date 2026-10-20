@@ -38,6 +38,7 @@ export async function render(container, args, app) {
     h('label', { class: 'field' }, h('span', null, 'Начало недели 1'), start),
     h('label', { class: 'field' }, h('span', null, 'Часовой пояс'), tz),
     h('label', { class: 'field' }, h('span', null, 'Целевой вес, кг'), gw),
+    h('p', { class: 'muted small' }, 'Ориентир — 76–78 кг. Целевую талию задайте после первого замера.'),
     h('label', { class: 'field' }, h('span', null, 'Целевая талия, см'), gwaist),
     h('button', { class: 'btn primary', onclick: () => saveAndReload(app, 'PUT', 'settings', {
       week1_start: start.value, timezone: tz.value.trim(),
