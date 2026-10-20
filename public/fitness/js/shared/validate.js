@@ -1,6 +1,7 @@
 // Проверка входных данных — общая для сервера и для локального режима в браузере.
 
 import { isIsoDate, parseNum } from './dates.js';
+import { EXERCISE_KINDS } from './seed.js';
 
 export class HttpError extends Error {
   constructor(status, message) {
@@ -50,4 +51,24 @@ export function beerChips(v) {
 
 export function workoutCode(v) {
   return text(v, 40)?.toUpperCase().replace(/[^A-Z0-9_]/g, '_') || null;
+}
+
+export function exerciseKind(v) {
+  const k = v === null || v === undefined || v === '' ? 'weight_reps' : String(v);
+  if (!Object.hasOwn(EXERCISE_KINDS, k)) throw bad('Неизвестный тип упражнения');
+  return k;
+}
+
+// Диапазон программы: повторы, секунды, метры или минуты; 0–0 — «до запаса».
+export function repRange(min, max) {
+  const a = intOrNull(min, 0, 3600, 'rep_min');
+  const b = intOrNull(max, 0, 3600, 'rep_max');
+  if (a === null || b === null || a > b || (a === 0 && b !== 0)) throw bad('Неверный диапазон повторов');
+  return [a, b];
+}
+
+// Повторы для замены — необязательны: пусто — как у основного упражнения.
+export function subRepRange(min, max) {
+  if ((min === null || min === undefined || min === '') && (max === null || max === undefined || max === '')) return [null, null];
+  return repRange(min, max);
 }

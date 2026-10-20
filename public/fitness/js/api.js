@@ -38,7 +38,7 @@ export let persisted = null;
 
 export async function ready() {
   if (!LOCAL || backend) return;
-  const [{ createBackend, initialState }, { openPersist, requestPersistence }] = await Promise.all([
+  const [{ createBackend, initialState, migrateState }, { openPersist, requestPersistence }] = await Promise.all([
     import('./local/backend.js'), import('./local/persist.js'),
   ]);
   let state = null;
@@ -47,6 +47,14 @@ export async function ready() {
     state = await persist.load();
   } catch {
     throw new Error('Браузер не даёт хранить данные (приватный режим?). Откройте трекер в обычном окне.');
+  }
+  if (state) {
+    // Перед обновлением данных до новой версии — отдельный снимок, его можно вернуть в «Настройках».
+    const before = structuredClone(state);
+    if (migrateState(state)) {
+      await persist.saveSnapshot(`${todayIn(state.settings.timezone)}~v${state.version}`, before);
+      await persist.save(state);
+    }
   }
   backend = createBackend(state || initialState(), { commit: (st) => persist.save(st) });
   if (!state) await persist.save(backend.state);

@@ -68,6 +68,16 @@ function renderStatus(st) {
   statusEl.hidden = !items.length;
 }
 
+// Сообщения после обновления данных (например, «Цели фаз отличаются от плана») — по одному разу на устройстве.
+function showNotices(list = []) {
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem('fit:notices-seen') || '[]'); } catch { /* нет хранилища */ }
+  const fresh = list.filter((n) => !seen.includes(n));
+  if (!fresh.length) return;
+  toast(fresh[0], 'warn');
+  try { localStorage.setItem('fit:notices-seen', JSON.stringify([...seen, ...fresh])); } catch { /* нет хранилища */ }
+}
+
 function buildNav() {
   mount(nav, NAV.map(([id, label]) => h('a', { href: `#/${id}`, 'data-view': id }, icon(id), h('span', null, label))));
 }
@@ -100,6 +110,7 @@ async function start() {
   }
   window.addEventListener('hashchange', render);
   await render();
+  showNotices(app.boot.notices);
   // После синхронизации очереди перечитываем данные, чтобы кэш был свежим.
   api.onChange((st) => {
     if (!st.synced) return;

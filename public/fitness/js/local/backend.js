@@ -1,45 +1,90 @@
 // Локальный режим: те же адреса и ответы, что у серверного API (src/api.js),
 // но данные лежат в объекте state, который js/local/persist.js хранит в IndexedDB на устройстве.
 
-import { todayIn, weekNo } from '../shared/dates.js';
+import { todayIn, weekNo, weekRange } from '../shared/dates.js';
 import { weeklySummary, calorieRecommendation } from '../shared/calc.js';
-import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode } from '../shared/validate.js';
+import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode, exerciseKind, repRange, subRepRange } from '../shared/validate.js';
 import { DEFAULT_SETTINGS, DEFAULT_PHASES, DEFAULT_DELOAD_WEEKS, DEFAULT_EXERCISES, DEFAULT_WORKOUTS, DEFAULT_SCHEDULE } from '../shared/seed.js';
+import { DATA_VERSION, planPhases, keepExercise, retiredWorkout } from '../shared/migrate.js';
 import { TABLE_COLUMNS, toCsv } from '../shared/csv.js';
 import { importWorkbook } from '../shared/importer.js';
 
 export const STATE_FORMAT = 'shimansky-fitness';
 
-export function initialState(now = new Date().toISOString()) {
-  const exercises = DEFAULT_EXERCISES.map(([name, increment_kg], i) => ({ id: i + 1, name, increment_kg }));
-  const exId = (name) => exercises.find((e) => e.name === name).id;
-  const workouts = [];
-  const items = [];
-  DEFAULT_WORKOUTS.forEach((w, wi) => {
-    workouts.push({ id: wi + 1, code: w.code, name: w.name, phase_from: w.phase_from, phase_to: w.phase_to });
-    w.items.forEach(([name, sets, rep_min, rep_max, rir_target, sub], i) => {
-      items.push({ id: items.length + 1, workout_id: wi + 1, position: i + 1, exercise_id: exId(name), sets, rep_min, rep_max, rir_target, substitute_exercise_id: sub ? exId(sub) : null });
+// Справочник, программы и расписание из seed.js. Упражнения и тренировки, на которые ссылаются записи, остаются.
+function installPrograms(st) {
+  const usedEx = new Set(Object.values(st.set_logs).map((x) => x.exercise_id));
+  const usedWo = new Set(Object.values(st.sessions).map((x) => x.workout_id).filter(Boolean));
+  st.exercises = st.exercises.filter((e) => keepExercise(e.name, e.id, usedEx));
+  for (const [name, increment_kg, kind] of DEFAULT_EXERCISES) {
+    const cur = st.exercises.find((e) => e.name === name);
+    if (cur) cur.kind = kind;
+    else st.exercises.push({ id: ++st.seq.exercises, name, increment_kg, kind });
+  }
+  for (const e of st.exercises) e.kind = e.kind || 'weight_reps';
+  const exIds = new Set(st.exercises.map((e) => e.id));
+  st.workouts = st.workouts.filter((w) => usedWo.has(w.id));
+  for (const w of st.workouts) if (DEFAULT_WORKOUTS.some((d) => d.code === w.code)) Object.assign(w, retiredWorkout(w));
+  st.workout_exercises = st.workout_exercises.filter((i) => usedWo.has(i.workout_id) && exIds.has(i.exercise_id))
+    .map((i) => ({
+      ...i, substitute_exercise_id: exIds.has(i.substitute_exercise_id) ? i.substitute_exercise_id : null,
+      sub_rep_min: i.sub_rep_min ?? null, sub_rep_max: i.sub_rep_max ?? null,
+    }));
+  const exId = (name) => st.exercises.find((e) => e.name === name).id;
+  for (const w of DEFAULT_WORKOUTS) {
+    const wid = ++st.seq.workouts;
+    st.workouts.push({ id: wid, code: w.code, name: w.name, phase_from: w.phase_from, phase_to: w.phase_to });
+    w.items.forEach(([name, sets, rep_min, rep_max, rir_target, sub, subReps], i) => {
+      st.workout_exercises.push({
+        id: ++st.seq.workout_exercises, workout_id: wid, position: i + 1, exercise_id: exId(name), sets, rep_min, rep_max, rir_target,
+        substitute_exercise_id: sub ? exId(sub) : null, sub_rep_min: subReps?.[0] ?? null, sub_rep_max: subReps?.[1] ?? null,
+      });
     });
-  });
+  }
+  st.schedule = DEFAULT_SCHEDULE.map(([phase_no, weekday, code]) => ({ phase_no, weekday, workout_id: st.workouts.find((w) => w.code === code).id }));
+}
+
+export function initialState(now = new Date().toISOString()) {
   const weekly = {};
   for (const w of DEFAULT_DELOAD_WEEKS) weekly[w] = { week_no: w, waist_cm: null, planned_sessions: null, is_deload: 1 };
-  return {
+  const st = {
     format: STATE_FORMAT,
-    version: 1,
+    version: DATA_VERSION,
     settings: { id: 1, ...DEFAULT_SETTINGS },
     phases: DEFAULT_PHASES.map((p) => ({ ...p })),
     daily_log: {},
     weekly_log: weekly,
-    exercises,
-    workouts,
-    workout_exercises: items,
-    schedule: DEFAULT_SCHEDULE.map(([phase_no, weekday, code]) => ({ phase_no, weekday, workout_id: workouts.find((w) => w.code === code).id })),
+    exercises: [],
+    workouts: [],
+    workout_exercises: [],
+    schedule: [],
     sessions: {},
     set_logs: {},
     tests: {},
-    seq: { exercises: exercises.length, workouts: workouts.length, workout_exercises: items.length },
-    meta: { created_at: now, last_backup_at: null },
+    seq: { exercises: 0, workouts: 0, workout_exercises: 0 },
+    meta: { created_at: now, last_backup_at: null, notices: [] },
   };
+  installPrograms(st);
+  return st;
+}
+
+// Обновление сохранённого state до DATA_VERSION. Возвращает true, если что-то поменялось.
+// Снимок до миграции делает вызывающий (js/api.js) — до записи нового state.
+export function migrateState(st) {
+  if (st.version >= DATA_VERSION) return false;
+  st.meta = { notices: [], ...st.meta };
+  if (st.version < 2) {
+    const { updates, notice } = planPhases(st.phases);
+    for (const u of updates) st.phases = [...st.phases.filter((p) => p.phase_no !== u.phase_no), u];
+    if (notice) st.meta.notices = [...st.meta.notices, notice];
+    for (const x of Object.values(st.set_logs)) {
+      x.duration_sec ??= null;
+      x.distance_m ??= null;
+    }
+    installPrograms(st);
+  }
+  st.version = DATA_VERSION;
+  return true;
 }
 
 export function validateState(s) {
@@ -75,7 +120,11 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       items: S().workout_exercises.filter((i) => i.workout_id === w.id).sort((a, c) => a.position - c.position).map((i) => {
         const e = exercise(i.exercise_id);
         const se = i.substitute_exercise_id ? exercise(i.substitute_exercise_id) : null;
-        return { ...i, exercise_name: e?.name ?? '?', increment_kg: e?.increment_kg ?? 2.5, substitute_name: se?.name ?? null, substitute_increment_kg: se?.increment_kg ?? null };
+        return {
+          ...i, sub_rep_min: i.sub_rep_min ?? null, sub_rep_max: i.sub_rep_max ?? null,
+          exercise_name: e?.name ?? '?', increment_kg: e?.increment_kg ?? 2.5, exercise_kind: e?.kind ?? 'weight_reps',
+          substitute_name: se?.name ?? null, substitute_increment_kg: se?.increment_kg ?? null, substitute_kind: se?.kind ?? null,
+        };
       }),
     }));
   }
@@ -98,7 +147,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     if (!s) return null;
     const sets = Object.values(S().set_logs).filter((x) => x.session_id === id)
       .sort((a, c) => a.exercise_id - c.exercise_id || a.set_no - c.set_no)
-      .map(({ exercise_id, set_no, weight_kg, reps, rir }) => ({ exercise_id, set_no, weight_kg, reps, rir }));
+      .map(({ exercise_id, set_no, weight_kg, reps, rir, duration_sec, distance_m }) => ({ exercise_id, set_no, weight_kg, reps, rir, duration_sec: duration_sec ?? null, distance_m: distance_m ?? null }));
     return { ...s, sets };
   }
 
@@ -109,12 +158,24 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       const s = S().sessions[x.session_id];
       if (!s || s.date > beforeDate) continue;
       if (!groups.has(s.id)) groups.set(s.id, { session_id: s.id, date: s.date, sets: [] });
-      groups.get(s.id).sets.push({ set_no: x.set_no, weight_kg: x.weight_kg, reps: x.reps, rir: x.rir });
+      groups.get(s.id).sets.push({ set_no: x.set_no, weight_kg: x.weight_kg, reps: x.reps, rir: x.rir, duration_sec: x.duration_sec ?? null, distance_m: x.distance_m ?? null });
     }
     const sorted = [...groups.values()].sort((a, c) => (a.date === c.date ? (a.session_id < c.session_id ? 1 : -1) : a.date < c.date ? 1 : -1));
     for (const g of sorted) g.sets.sort((a, c) => a.set_no - c.set_no);
     const dl = deloads();
     return sorted.find((g) => !dl.has(weekNo(g.date, S().settings.week1_start))) || null;
+  }
+
+  // Сколько тренировок недели с кардио (подход кардио-упражнения с минутами).
+  function weekCardio(date) {
+    const { from, to } = weekRange(weekNo(date, S().settings.week1_start), S().settings.week1_start);
+    const cardio = new Set(S().exercises.filter((e) => e.kind === 'cardio').map((e) => e.id));
+    const ids = new Set();
+    for (const x of Object.values(S().set_logs)) {
+      const s = S().sessions[x.session_id];
+      if (s && s.date >= from && s.date <= to && cardio.has(x.exercise_id) && x.duration_sec > 0) ids.add(s.id);
+    }
+    return ids.size;
   }
 
   function ensureWeek(week) {
@@ -146,9 +207,9 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       S().daily_log[rec.date] = cur;
     },
     mergeWeek(week, patch) { Object.assign(ensureWeek(week), patch); },
-    createExercise(name, increment_kg) {
+    createExercise(name, increment_kg, kind = 'weight_reps') {
       const id = ++S().seq.exercises;
-      S().exercises.push({ id, name, increment_kg });
+      S().exercises.push({ id, name, increment_kg, kind });
       return id;
     },
     putImportSession(id, date, workout_id, completed_at) {
@@ -158,8 +219,8 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     clearSets(sid) {
       for (const [k, x] of Object.entries(S().set_logs)) if (x.session_id === sid) delete S().set_logs[k];
     },
-    putSet(session_id, exercise_id, set_no, weight_kg, reps, rir) {
-      S().set_logs[setKey(session_id, exercise_id, set_no)] = { session_id, exercise_id, set_no, weight_kg, reps, rir };
+    putSet(session_id, exercise_id, set_no, weight_kg, reps, rir, duration_sec = null, distance_m = null) {
+      S().set_logs[setKey(session_id, exercise_id, set_no)] = { session_id, exercise_id, set_no, weight_kg, reps, rir, duration_sec, distance_m };
     },
     mergeTest(rec) {
       const cur = S().tests[rec.week_no] || { week_no: rec.week_no, date: null, weight_kg: null, waist_cm: null, pullups: null, pushups: null, plank_sec: null, photo_done: 0, note: null };
@@ -179,6 +240,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     schedule: [...S().schedule].sort((a, c) => a.phase_no - c.phase_no || a.weekday - c.weekday),
     passkeys: 0,
     mail: false,
+    notices: S().meta.notices || [],
     local: {
       last_backup_at: S().meta.last_backup_at,
       created_at: S().meta.created_at,
@@ -196,6 +258,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       prev_weight: prev ? { date: prev.date, weight_kg: prev.weight_kg } : null,
       week: weekNo(date, S().settings.week1_start),
       sessions: Object.values(S().sessions).filter((s) => s.date === date).map(({ id, workout_id, completed_at }) => ({ id, workout_id, completed_at })),
+      week_cardio: weekCardio(date),
     };
   });
 
@@ -273,7 +336,8 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     if (!exercise(exerciseId)) throw bad('Нет такого упражнения');
     const setNo = intOrNull(params.setNo, 1, 20, 'set_no');
     importStore.putSet(id, exerciseId, setNo,
-      num(body.weight_kg, [0, 500, false], 'weight_kg'), intOrNull(body.reps, 0, 200, 'reps'), intOrNull(body.rir, 0, 10, 'rir'));
+      num(body.weight_kg, [0, 500, false], 'weight_kg'), intOrNull(body.reps, 0, 200, 'reps'), intOrNull(body.rir, 0, 10, 'rir'),
+      intOrNull(body.duration_sec, 0, 36000, 'duration_sec'), num(body.distance_m, [0, 100000, false], 'distance_m'));
     return { ok: true };
   });
 
@@ -377,7 +441,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     const name = text(body.name, 120);
     if (!name) throw bad('Нужно название упражнения');
     if (S().exercises.some((e) => e.name === name)) throw bad('Такое упражнение уже есть');
-    const id = importStore.createExercise(name, num(body.increment_kg ?? 2.5, [0, 50, false], 'increment_kg'));
+    const id = importStore.createExercise(name, num(body.increment_kg ?? 2.5, [0, 50, false], 'increment_kg'), exerciseKind(body.kind));
     return { exercise: { ...exercise(id) } };
   });
 
@@ -386,6 +450,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     if (!cur) throw new HttpError(404, 'Нет такого упражнения');
     cur.name = text(body.name, 120) || cur.name;
     if (body.increment_kg !== undefined) cur.increment_kg = num(body.increment_kg, [0, 50, false], 'increment_kg');
+    if (body.kind !== undefined) cur.kind = exerciseKind(body.kind);
     return { exercise: { ...cur } };
   });
 
@@ -399,13 +464,13 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     let items = null;
     if (Array.isArray(body.items)) {
       items = body.items.map((it, i) => {
-        const repMin = intOrNull(it.rep_min, 1, 100, 'rep_min');
-        const repMax = intOrNull(it.rep_max, 1, 100, 'rep_max');
-        if (repMin === null || repMax === null || repMin > repMax) throw bad('Неверный диапазон повторов');
+        const [repMin, repMax] = repRange(it.rep_min, it.rep_max);
+        const [subMin, subMax] = subRepRange(it.sub_rep_min, it.sub_rep_max);
         if (!exercise(Number(it.exercise_id))) throw bad('Нет такого упражнения');
         return {
           position: i + 1, exercise_id: Number(it.exercise_id), sets: intOrNull(it.sets, 1, 10, 'sets'), rep_min: repMin, rep_max: repMax,
           rir_target: intOrNull(it.rir_target, 0, 5, 'rir_target'), substitute_exercise_id: it.substitute_exercise_id ? Number(it.substitute_exercise_id) : null,
+          sub_rep_min: subMin, sub_rep_max: subMax,
         };
       });
     }

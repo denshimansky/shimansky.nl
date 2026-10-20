@@ -5,6 +5,7 @@ import { h, mount, toast } from '../ui.js';
 import { WEEKDAY_NAMES, parseNum, fmtDateShort } from '../shared/dates.js';
 import { createPasskey, supported as passkeySupported } from '../passkey.js';
 import { saveBackup, downloadText, daysSinceBackup } from '../backup.js';
+import { EXERCISE_KINDS } from '../shared/seed.js';
 
 const EXPORT_TABLES = ['daily_log', 'weekly_log', 'sessions', 'set_logs', 'tests', 'phases', 'schedule', 'workouts', 'workout_exercises', 'exercises', 'settings'];
 
@@ -102,8 +103,9 @@ export async function render(container, args, app) {
       h('summary', null, `Упражнения и шаг прибавки (${exercises.length})`),
       exercises.map((e) => {
         const inc = h('input', { class: 'num', type: 'text', inputmode: 'decimal', value: numStr(e.increment_kg), 'aria-label': `Шаг, ${e.name}` });
-        return h('div', { class: 'inline-form' }, h('span', { class: 'grow' }, e.name), inc, h('span', { class: 'unit' }, 'кг'),
-          h('button', { class: 'btn small', onclick: () => saveAndReload(app, 'PUT', `exercises/${e.id}`, { increment_kg: parseNum(inc.value) }) }, 'OK'));
+        const kind = kindSelect(e.kind, `Тип, ${e.name}`);
+        return h('div', { class: 'inline-form' }, h('span', { class: 'grow' }, e.name), kind, inc, h('span', { class: 'unit' }, 'кг'),
+          h('button', { class: 'btn small', onclick: () => saveAndReload(app, 'PUT', `exercises/${e.id}`, { increment_kg: parseNum(inc.value), kind: kind.value }) }, 'OK'));
       }),
       newExerciseForm(app)));
 
@@ -161,8 +163,12 @@ function localStorageCard(app) {
     }
   };
   api.local.snapshots().then((days) => mount(snapsBox, days.length
-    ? days.map((d) => h('div', { class: 'list-item' }, h('span', null, `Состояние на утро ${fmtDateShort(d)}`),
-      h('button', { class: 'btn small ghost', onclick: async () => restore(await api.local.snapshot(d), `от ${fmtDateShort(d)}`) }, 'Вернуть')))
+    ? days.map((d) => {
+      const [day, version] = d.split('~');
+      const label = version ? `Перед обновлением трекера, ${fmtDateShort(day)}` : `Состояние на утро ${fmtDateShort(day)}`;
+      return h('div', { class: 'list-item' }, h('span', null, label),
+        h('button', { class: 'btn small ghost', onclick: async () => restore(await api.local.snapshot(d), version ? `до обновления (${fmtDateShort(day)})` : `от ${fmtDateShort(day)}`) }, 'Вернуть'));
+    })
     : h('p', { class: 'muted small' }, 'Снимков пока нет — они появляются с первой правки каждого дня.'))).catch(() => {});
 
   return h('section', { class: 'card' },
@@ -230,11 +236,17 @@ function authCard() {
     } }, 'Выйти'));
 }
 
+function kindSelect(value, label) {
+  return h('select', { class: 'kind', 'aria-label': label },
+    Object.entries(EXERCISE_KINDS).map(([k, t]) => h('option', { value: k, selected: k === (value || 'weight_reps') }, t)));
+}
+
 function newExerciseForm(app) {
   const name = h('input', { type: 'text', placeholder: 'Новое упражнение', 'aria-label': 'Название упражнения' });
+  const kind = kindSelect('weight_reps', 'Тип упражнения');
   const inc = h('input', { class: 'num', type: 'text', inputmode: 'decimal', value: '2,5', 'aria-label': 'Шаг прибавки' });
-  return h('div', { class: 'inline-form' }, name, inc, h('span', { class: 'unit' }, 'кг'),
-    h('button', { class: 'btn small', onclick: () => saveAndReload(app, 'POST', 'exercises', { name: name.value, increment_kg: parseNum(inc.value) }, 'Упражнение добавлено') }, 'Добавить'));
+  return h('div', { class: 'inline-form' }, name, kind, inc, h('span', { class: 'unit' }, 'кг'),
+    h('button', { class: 'btn small', onclick: () => saveAndReload(app, 'POST', 'exercises', { name: name.value, kind: kind.value, increment_kg: parseNum(inc.value) }, 'Упражнение добавлено') }, 'Добавить'));
 }
 
 function importReport(r) {
@@ -286,7 +298,8 @@ async function renderWorkoutEditor(container, idArg, app) {
           h('button', { class: 'icon-btn small', 'aria-label': 'Удалить', onclick: () => { items.splice(idx, 1); draw(); } }, '✕'))),
       exSelect(it.exercise_id, (v) => { it.exercise_id = v; }),
       h('div', { class: 'mini-row' }, n('sets', 'Подходы'), n('rep_min', 'Повт. от'), n('rep_max', 'до'), n('rir_target', 'Запас')),
-      h('label', { class: 'mini' }, h('span', null, 'Замена'), exSelect(it.substitute_exercise_id, (v) => { it.substitute_exercise_id = v; }, true)));
+      h('label', { class: 'mini' }, h('span', null, 'Замена'), exSelect(it.substitute_exercise_id, (v) => { it.substitute_exercise_id = v; draw(); }, true)),
+      it.substitute_exercise_id ? h('div', { class: 'mini-row' }, n('sub_rep_min', 'Замена: от'), n('sub_rep_max', 'до')) : null);
   }));
   draw();
 
@@ -296,6 +309,7 @@ async function renderWorkoutEditor(container, idArg, app) {
       h('label', { class: 'field' }, h('span', null, 'Код'), code),
       h('label', { class: 'field' }, h('span', null, 'Название'), name),
       h('div', { class: 'inline-form' }, h('span', null, 'Фазы с'), pf, h('span', null, 'по'), pt)),
+    h('p', { class: 'muted small' }, 'Повторы — по типу упражнения: повторы, секунды (время), метры (дистанция) или минуты (кардио). 0–0 — «до запаса». Повторы замены можно не заполнять.'),
     list,
     h('button', { class: 'btn', onclick: () => { items.push({ exercise_id: exercises[0]?.id, sets: 3, rep_min: 8, rep_max: 10, rir_target: 2, substitute_exercise_id: null }); draw(); } }, '+ Упражнение'),
     h('div', { class: 'sheet-actions' },

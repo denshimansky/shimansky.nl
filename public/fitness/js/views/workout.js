@@ -3,7 +3,7 @@
 import * as api from '../api.js';
 import { h, mount, toast } from '../ui.js';
 import { fmtDateLong, fmtDateShort, fmtNum, parseNum, isIsoDate } from '../shared/dates.js';
-import { dayContext, scheduledWorkoutId, progression, formatSets } from '../shared/calc.js';
+import { dayContext, scheduledWorkoutId, progression, formatSets, formatScheme, prescribedSets, hasFinisher, FINISHER } from '../shared/calc.js';
 
 const RIR_OPTIONS = [0, 1, 2, 3, 4];
 
@@ -163,52 +163,79 @@ export async function render(container, args, app) {
     return session.id;
   };
 
+  const phaseNo = ctx.phase?.phase_no ?? null;
+
+  // Поля подхода по типу упражнения: [ключ записи, подпись, клавиатура, множитель ввода → запись].
+  const FIELDS = {
+    weight_reps: [['weight_kg', 'кг', 'decimal'], ['reps', 'повт', 'numeric']],
+    reps: [['reps', 'повт', 'numeric']],
+    time_sec: [['duration_sec', 'сек', 'numeric']],
+    distance_m: [['weight_kg', 'кг', 'decimal'], ['distance_m', 'м', 'numeric']],
+    cardio: [['duration_sec', 'мин', 'decimal', 60]],
+  };
+  const withRir = (kind) => kind === 'weight_reps' || kind === 'reps';
+
   function slotView(item) {
     const sub = useSub.get(item.id);
     const exId = sub ? item.substitute_exercise_id : item.exercise_id;
-    const ex = exById.get(exId) || { name: '?', increment_kg: 2.5 };
+    const ex = exById.get(exId) || { name: '?', increment_kg: 2.5, kind: 'weight_reps' };
+    const kind = ex.kind || 'weight_reps';
+    const repMin = sub && item.sub_rep_min !== null && item.sub_rep_min !== undefined ? item.sub_rep_min : item.rep_min;
+    const repMax = sub && item.sub_rep_max !== null && item.sub_rep_max !== undefined ? item.sub_rep_max : item.rep_max;
     const hist = data.history[exId];
-    const prog = progression({ lastSets: hist?.sets, sets: item.sets, repMin: item.rep_min, repMax: item.rep_max, increment: ex.increment_kg, deload: data.deload });
-    const planned = prog.sets;
+    const planned = prescribedSets({ sets: item.sets, position: item.position, week: data.week, phaseNo, deload: data.deload });
+    const prog = progression({ kind, lastSets: hist?.sets, sets: planned, repMin, repMax, increment: ex.increment_kg, deload: data.deload });
     const loggedNos = [...sets.values()].filter((s) => s.exercise_id === exId).map((s) => s.set_no);
     const rows = Math.max(planned, ...loggedNos, 0) + (extraRows.get(item.id) || 0);
+    const fields = FIELDS[kind] || FIELDS.weight_reps;
     const box = h('section', { class: 'card slot' });
+
+    const placeholder = (key, n) => {
+      if (key === 'weight_kg') return prog.weight !== null && ex.increment_kg > 0 ? fmtNum(prog.weight, 2) : 'кг';
+      const t = prog.repTargets[n - 1];
+      if (key === 'duration_sec' && kind === 'cardio') return t ? String(t) : 'мин';
+      return t !== null && t !== undefined ? String(t) : key === 'reps' ? 'повт' : '';
+    };
+    const shown = (key, saved) => {
+      const v = saved?.[key];
+      if (v === null || v === undefined) return '';
+      if (key === 'duration_sec' && kind === 'cardio') return fmtNum(v / 60, 1).replace(/\s/g, '');
+      return fmtNum(v, 2).replace(/\s/g, '');
+    };
 
     const setRow = (n) => {
       const key = `${exId}:${n}`;
       const saved = sets.get(key);
       const draft = drafts.get(key) || {};
-      const wIn = h('input', {
-        type: 'text', inputmode: 'decimal', class: 'set-in', 'aria-label': `Вес, подход ${n}`,
-        placeholder: prog.weight !== null && ex.increment_kg > 0 ? fmtNum(prog.weight, 2) : 'кг',
-        value: draft.w ?? (saved?.weight_kg !== null && saved?.weight_kg !== undefined ? fmtNum(saved.weight_kg, 2).replace(/\s/g, '') : ''),
-        oninput: (e) => drafts.set(key, { ...drafts.get(key), w: e.target.value }),
-      });
-      const rIn = h('input', {
-        type: 'text', inputmode: 'numeric', class: 'set-in', 'aria-label': `Повторы, подход ${n}`,
-        placeholder: String(prog.repTarget ?? item.rep_max),
-        value: draft.r ?? (saved?.reps ?? ''),
-        oninput: (e) => drafts.set(key, { ...drafts.get(key), r: e.target.value }),
-      });
-      const rirSel = h('select', {
+      const inputs = fields.map(([f, label, mode]) => h('input', {
+        type: 'text', inputmode: mode, class: 'set-in', 'aria-label': `${label}, подход ${n}`,
+        placeholder: placeholder(f, n),
+        value: draft[f] ?? shown(f, saved),
+        oninput: (e) => drafts.set(key, { ...drafts.get(key), [f]: e.target.value }),
+      }));
+      const rirSel = withRir(kind) ? h('select', {
         class: 'set-rir', 'aria-label': `Запас, подход ${n}`,
         onchange: (e) => drafts.set(key, { ...drafts.get(key), rir: e.target.value }),
       }, RIR_OPTIONS.map((v) => h('option', {
         value: v,
         selected: String(draft.rir ?? saved?.rir ?? item.rir_target ?? 2) === String(v),
-      }, v === 4 ? '4+' : String(v))));
+      }, v === 4 ? '4+' : String(v)))) : null;
       const commit = () => {
-        const w = parseNum(wIn.value) ?? (ex.increment_kg > 0 ? prog.weight : parseNum(wIn.value));
-        const r = parseNum(rIn.value) ?? prog.repTarget ?? item.rep_max;
-        const rir = Number(rirSel.value);
-        if (w === null && ex.increment_kg > 0) { toast('Введите вес', 'bad'); wIn.focus(); return; }
-        if (r === null || r < 0 || r > 200) { toast('Введите повторы', 'bad'); rIn.focus(); return; }
-        const body = { weight_kg: w, reps: Math.round(r), rir };
+        const body = { weight_kg: null, reps: null, rir: rirSel ? Number(rirSel.value) : null, duration_sec: null, distance_m: null };
+        for (const [i, [f, label, , mult]] of fields.entries()) {
+          const typed = parseNum(inputs[i].value);
+          const fallback = f === 'weight_kg' ? (ex.increment_kg > 0 ? prog.weight : null) : prog.repTargets[n - 1];
+          let v = typed ?? fallback;
+          if (f === 'weight_kg' && v === null && ex.increment_kg > 0) { toast('Введите вес', 'bad'); inputs[i].focus(); return; }
+          if (f !== 'weight_kg' && (v === null || v < 0)) { toast(`Введите: ${label}`, 'bad'); inputs[i].focus(); return; }
+          if (v !== null && mult) v *= mult;
+          body[f] = v === null ? null : f === 'weight_kg' || f === 'distance_m' ? v : Math.round(v);
+        }
         const sid = ensureSession();
         api.write('PUT', `sessions/${sid}/sets/${exId}/${n}`, body);
         sets.set(key, { exercise_id: exId, set_no: n, ...body });
         drafts.delete(key);
-        startRest(item.rep_max <= 6 ? 180 : 90);
+        if (kind !== 'cardio') startRest(kind === 'weight_reps' && repMax && repMax <= 6 ? 180 : kind === 'time_sec' ? 60 : 90);
         redraw();
       };
       const remove = () => {
@@ -220,7 +247,10 @@ export async function render(container, args, app) {
       };
       return h('div', { class: ['set-row', saved ? 'saved' : ''] },
         h('span', { class: 'set-no' }, n),
-        wIn, h('span', { class: 'x' }, '×'), rIn, rirSel,
+        inputs[0],
+        h('span', { class: 'x' }, inputs[1] ? '×' : ''),
+        inputs[1] || h('span'),
+        rirSel || h('span'),
         h('button', { class: ['check-btn', saved ? 'on' : ''], 'aria-label': saved ? `Пересохранить подход ${n}` : `Записать подход ${n}`, onclick: commit }, '✓'),
         saved ? h('button', { class: 'icon-btn small', 'aria-label': `Удалить подход ${n}`, onclick: remove }, '✕') : h('span', { class: 'icon-btn small placeholder' }));
     };
@@ -230,23 +260,59 @@ export async function render(container, args, app) {
       box.replaceWith(box2);
     }
 
-    const rx = `${planned} × ${item.rep_min}–${item.rep_max}${item.rir_target !== null && item.rir_target !== undefined ? ` · запас ${item.rir_target}` : ''}`;
     mount(box,
       h('div', { class: 'slot-head' },
         h('h3', null, ex.name),
-        h('span', { class: 'muted' }, rx)),
+        h('span', { class: 'muted' }, formatScheme({ kind, sets: planned, repMin, repMax, rir: item.rir_target }))),
       item.substitute_exercise_id ? h('label', { class: 'sub-toggle' },
         h('input', { type: 'checkbox', checked: sub, onchange: (e) => { useSub.set(item.id, e.target.checked); redraw(); } }),
         sub ? ` Замена вместо: ${item.exercise_name}` : ` Замена: ${item.substitute_name}`) : null,
-      h('p', { class: 'history' }, hist ? `В прошлый раз (${fmtDateShort(hist.date)}): ${formatSets(hist.sets)}` : 'В прошлый раз: нет записей'),
-      prog.kind !== 'none' ? h('p', { class: ['hint', prog.kind === 'up' ? 'up' : prog.kind === 'deload' ? 'deload' : ''] },
+      h('p', { class: 'history' }, hist ? `В прошлый раз (${fmtDateShort(hist.date)}): ${formatSets(hist.sets, kind)}` : 'В прошлый раз: нет записей'),
+      prog.kind !== 'none' || kind === 'cardio' ? h('p', { class: ['hint', prog.kind === 'up' ? 'up' : prog.kind === 'deload' ? 'deload' : ''] },
         ex.increment_kg > 0 && prog.weight !== null ? h('strong', null, `${fmtNum(prog.weight, 2)} кг`) : null,
         ex.increment_kg > 0 && prog.weight !== null ? ' · ' : '',
         prog.text) : null,
-      h('div', { class: 'set-head' }, h('span'), h('span', null, 'кг'), h('span'), h('span', null, 'повт'), h('span', null, 'запас'), h('span'), h('span')),
+      h('div', { class: 'set-head' }, h('span'), h('span', null, fields[0][1]), h('span'), h('span', null, fields[1]?.[1] || ''),
+        h('span', null, withRir(kind) ? 'запас' : ''), h('span'), h('span')),
       Array.from({ length: rows }, (_, i) => setRow(i + 1)),
-      h('button', { class: 'link-btn', onclick: () => { extraRows.set(item.id, (extraRows.get(item.id) || 0) + 1); redraw(); } }, '+ подход'));
+      kind === 'cardio' ? null : h('button', { class: 'link-btn', onclick: () => { extraRows.set(item.id, (extraRows.get(item.id) || 0) + 1); redraw(); } }, '+ подход'));
     return box;
+  }
+
+  // Фаза 3: после «Низ A/B» — финишер 8–10 минут, один из вариантов кардио. Пишется подходом кардио-упражнения.
+  function finisherView() {
+    const variants = exercises.filter((e) => e.kind === 'cardio');
+    const box = h('section', { class: 'card slot finisher' });
+    const draw = () => {
+      const done = [...sets.values()].find((s) => variants.some((v) => v.id === s.exercise_id) && s.duration_sec > 0);
+      if (done) {
+        mount(box, h('div', { class: 'slot-head' }, h('h3', null, `Финишер ${FINISHER.minMin}–${FINISHER.maxMin} мин`)),
+          h('div', { class: 'row-between' },
+            h('span', { class: 'good' }, `✓ ${exById.get(done.exercise_id)?.name} · ${fmtNum(done.duration_sec / 60, 0)} мин`),
+            h('button', { class: 'icon-btn small', 'aria-label': 'Удалить финишер', onclick: () => {
+              api.write('DELETE', `sessions/${session.id}/sets/${done.exercise_id}/${done.set_no}`);
+              sets.delete(`${done.exercise_id}:${done.set_no}`);
+              draw();
+            } }, '✕')));
+        return;
+      }
+      const pick = h('select', { 'aria-label': 'Вариант финишера' }, variants.map((v) => h('option', { value: v.id }, v.name)));
+      const mins = h('input', { type: 'text', inputmode: 'numeric', class: 'set-in', placeholder: String(FINISHER.maxMin), 'aria-label': 'Минуты' });
+      mount(box, h('div', { class: 'slot-head' }, h('h3', null, `Финишер ${FINISHER.minMin}–${FINISHER.maxMin} мин`), h('span', { class: 'muted' }, 'фаза 3')),
+        pick,
+        h('div', { class: 'inline-form' }, mins, h('span', { class: 'unit' }, 'мин'),
+          h('button', { class: 'btn small primary', onclick: () => {
+            const m = parseNum(mins.value) ?? FINISHER.maxMin;
+            if (m <= 0 || m > 120) { toast('Введите минуты', 'bad'); return; }
+            const exId = Number(pick.value);
+            const body = { weight_kg: null, reps: null, rir: null, duration_sec: Math.round(m * 60), distance_m: null };
+            api.write('PUT', `sessions/${ensureSession()}/sets/${exId}/1`, body);
+            sets.set(`${exId}:1`, { exercise_id: exId, set_no: 1, ...body });
+            draw();
+          } }, 'Сделано')));
+    };
+    draw();
+    return variants.length ? box : null;
   }
 
   const notes = h('textarea', {
@@ -279,7 +345,11 @@ export async function render(container, args, app) {
       h('div', { class: 'row-between' }, h('h1', null, workout.name), switcher),
       h('p', { class: 'muted' }, `${fmtDateLong(date)} · неделя ${ctx.week}`, stale ? h('span', { class: 'chip' }, 'офлайн') : null)),
     data.deload ? h('p', { class: 'banner warn' }, 'Разгрузочная неделя: половина подходов, вес −10% от последнего рабочего.') : null,
+    !data.deload && data.week >= 1 && data.week <= 2 ? h('p', { class: 'banner' }, 'Недели 1–2: на один подход меньше, чем в программе.') : null,
+    workout.items.length && workout.items.every((it) => exById.get(it.exercise_id)?.kind === 'cardio')
+      ? h('p', { class: 'muted' }, 'Выберите один вариант и запишите минуты.') : null,
     workout.items.length ? workout.items.map(slotView) : h('p', { class: 'muted' }, 'В программе нет упражнений — добавьте их в «Настройках».'),
+    hasFinisher(workout.code, phaseNo) ? finisherView() : null,
     notes,
     finishBtn());
 }

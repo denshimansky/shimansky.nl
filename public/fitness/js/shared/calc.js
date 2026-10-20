@@ -162,43 +162,129 @@ function roundTo(x, step) {
   return Math.round(x / step) * step;
 }
 
-// Расчёт 8 и 9: подсказка веса на тренировке.
+// Подходы на сегодня по правилам плана (база — из программы, position — место упражнения с 1):
+// недели 1–2 — на 1 меньше (минимум 2); фаза 4 — базовые (позиции 1–2) не больше 3, остальные не больше 2;
+// разгрузка — половина.
+export function prescribedSets({ sets, position, week, phaseNo, deload = false }) {
+  let n = sets;
+  if (week >= 1 && week <= 2) n = Math.max(Math.min(2, sets), sets - 1);
+  if (phaseNo === 4) n = Math.min(n, position <= 2 ? 3 : 2);
+  if (deload) n = Math.max(1, Math.ceil(n / 2));
+  return n;
+}
+
+// Фаза 3: после «Низ A» и «Низ B» — финишер 8–10 минут.
+export const FINISHER = { codes: ['LOWER_A', 'LOWER_B'], phase: 3, minMin: 8, maxMin: 10 };
+export function hasFinisher(workoutCode, phaseNo) {
+  return phaseNo === FINISHER.phase && FINISHER.codes.includes(workoutCode);
+}
+
+// Фаза 4: плюс 3 кардио по 15–20 минут в неделю.
+export function weeklyCardioTarget(phaseNo) {
+  return phaseNo === 4 ? 3 : 0;
+}
+
+export const isAmrap = (repMin, repMax) => !repMin && !repMax;
+const has = (v) => v !== null && v !== undefined;
+const fmtKg = (x) => String(x).replace('.', ',');
+
+// Расчёт 8 и 9: подсказка на тренировке по типу упражнения (kind).
 // lastSets — подходы этого упражнения из последней тренировки вне разгрузочных недель.
-export function progression({ lastSets, sets, repMin, repMax, increment, deload = false }) {
-  const logged = (lastSets || []).filter((s) => s.weight_kg !== null && s.weight_kg !== undefined && s.reps !== null && s.reps !== undefined);
-  if (!logged.length) return { kind: 'none', weight: null, sets, repTarget: repMin, text: 'Прошлых данных нет — подберите рабочий вес' };
+// repMin/repMax — повторы, секунды или метры (по типу); 0–0 — «до запаса».
+// Возвращает weight (кг) и repTargets[i] — цель для подхода i (повторы, секунды или метры).
+export function progression({ kind = 'weight_reps', lastSets, sets, repMin, repMax, increment, deload = false }) {
+  const amrap = isAmrap(repMin, repMax);
+  const res = (kind2, weight, targets, text) => ({
+    kind: kind2, weight, sets, repTarget: Array.isArray(targets) ? targets[0] ?? null : targets,
+    repTargets: Array.from({ length: sets }, (_, i) => (Array.isArray(targets) ? targets[Math.min(i, targets.length - 1)] ?? null : targets)), text,
+  });
+  const all = lastSets || [];
+
+  if (kind === 'cardio') {
+    const done = all.filter((s) => has(s.duration_sec));
+    const last = done.length ? Math.round(done.reduce((a, s) => a + Number(s.duration_sec), 0) / 60) : null;
+    return res('none', null, repMax || null, last ? `В прошлый раз ${last} мин` : `Цель ${repMin}–${repMax} мин`);
+  }
+
+  if (kind === 'time_sec') {
+    const done = all.filter((s) => has(s.duration_sec));
+    if (!done.length) return res('none', null, repMin, `Начните с ${repMin} с`);
+    const best = Math.max(...done.map((s) => Number(s.duration_sec)));
+    if (deload) return res('deload', null, best, 'Разгрузка: половина подходов, то же время');
+    return res('up', null, best + 5, `+5–10 с к прошлому разу (было ${best} с)`);
+  }
+
+  if (kind === 'reps') {
+    const done = all.filter((s) => has(s.reps));
+    if (!done.length) {
+      return res('none', null, amrap ? null : repMin, amrap ? 'Прошлых данных нет — сколько получится, с запасом' : 'Прошлых данных нет — начните с нижней границы');
+    }
+    const reps = done.map((s) => Number(s.reps));
+    if (deload) return res('deload', null, reps, 'Разгрузка: половина подходов, повторы как в прошлый раз');
+    if (!amrap && reps.every((r) => r >= repMax)) return res('harder', null, repMax, `Все подходы по ${repMax} — усложните вариант`);
+    return res('reps', null, reps.map((r) => (amrap ? r + 1 : Math.min(r + 1, repMax))), '+1 повтор в каждом подходе');
+  }
+
+  if (kind === 'distance_m') {
+    const done = all.filter((s) => has(s.weight_kg) && has(s.distance_m));
+    if (!done.length) return res('none', null, repMax, 'Прошлых данных нет — подберите вес');
+    const working = Math.max(...done.map((s) => Number(s.weight_kg)));
+    if (deload) return res('deload', Math.max(0, roundTo(working * 0.9, 0.5)), repMax, 'Разгрузка: половина подходов, вес −10%');
+    if (done.every((s) => Number(s.distance_m) >= repMax) && increment > 0) {
+      return res('up', working + increment, repMax, `Прибавить ${fmtKg(increment)} кг, та же дистанция`);
+    }
+    return res('same', working, repMax, `Тот же вес, цель ${repMax} м`);
+  }
+
+  const logged = all.filter((s) => has(s.weight_kg) && has(s.reps));
+  if (!logged.length) return res('none', null, amrap ? null : repMin, 'Прошлых данных нет — подберите рабочий вес');
   const working = Math.max(...logged.map((s) => Number(s.weight_kg)));
   if (deload) {
-    const w = Math.max(0, roundTo(working * 0.9, 0.5));
-    const half = Math.max(1, Math.ceil(sets / 2));
-    return { kind: 'deload', weight: w, sets: half, repTarget: repMin, text: `Разгрузка: ${half} × ${repMin}–${repMax}, вес −10%` };
+    return res('deload', Math.max(0, roundTo(working * 0.9, 0.5)), repMin || null, 'Разгрузка: половина подходов, вес −10%');
   }
-  const allHit = logged.every((s) => Number(s.reps) >= repMax && s.rir !== null && s.rir !== undefined && Number(s.rir) >= 1);
-  if (allHit && increment > 0) {
-    return { kind: 'up', weight: working + increment, sets, repTarget: repMin, text: `Прибавить ${String(increment).replace('.', ',')} кг, цель ${repMin} повт.` };
-  }
-  if (allHit) {
-    return { kind: 'reps', weight: working, sets, repTarget: repMax + 1, text: 'Тот же вес, больше повторов' };
-  }
-  return { kind: 'same', weight: working, sets, repTarget: repMax, text: `Тот же вес, цель ${repMax} повт.` };
+  const allHit = !amrap && logged.every((s) => Number(s.reps) >= repMax && has(s.rir) && Number(s.rir) >= 1);
+  if (allHit && increment > 0) return res('up', working + increment, repMin, `Прибавить ${fmtKg(increment)} кг, цель ${repMin} повт.`);
+  if (allHit) return res('reps', working, repMax + 1, 'Тот же вес, больше повторов');
+  return res('same', working, amrap ? null : repMax, amrap ? 'Тот же вес, с запасом' : `Тот же вес, цель ${repMax} повт.`);
+}
+
+// Схема упражнения для подписи: «3 × 8–10», «3 × 30–45 с», «3 × 40 м», «8–10 мин», «2 × до запаса 2».
+export function formatScheme({ kind = 'weight_reps', sets, repMin, repMax, rir }) {
+  const range = repMin === repMax ? `${repMin}` : `${repMin}–${repMax}`;
+  if (kind === 'cardio') return `${range} мин`;
+  if (isAmrap(repMin, repMax)) return `${sets} × до запаса ${rir ?? 2}`;
+  const unit = kind === 'time_sec' ? ' с' : kind === 'distance_m' ? ' м' : '';
+  return `${sets} × ${range}${unit}${has(rir) && kind !== 'time_sec' && kind !== 'distance_m' ? ` · запас ${rir}` : ''}`;
 }
 
 // «60 кг × 8/8/7»; при разных весах — группами: «60 × 8/8 · 62,5 × 6».
-export function formatSets(sets) {
-  const logged = (sets || []).filter((s) => s.reps !== null && s.reps !== undefined);
-  if (!logged.length) return '';
+// Для других типов: «45/40 с», «24 кг × 30/30 м», «18 мин», «8/7 повт.».
+export function formatSets(sets, kind = 'weight_reps') {
   const fmt = (x) => (x === null || x === undefined ? '—' : String(Math.round(x * 100) / 100).replace('.', ','));
+  const all = sets || [];
+  if (kind === 'cardio') {
+    const secs = all.filter((s) => has(s.duration_sec)).reduce((a, s) => a + Number(s.duration_sec), 0);
+    return secs ? `${Math.round(secs / 60)} мин` : '';
+  }
+  if (kind === 'time_sec') {
+    const xs = all.filter((s) => has(s.duration_sec));
+    return xs.length ? `${xs.map((s) => s.duration_sec).join('/')} с` : '';
+  }
+  const valKey = kind === 'distance_m' ? 'distance_m' : 'reps';
+  const unit = kind === 'distance_m' ? ' м' : '';
+  const logged = all.filter((s) => has(s[valKey]));
+  if (!logged.length) return '';
   const groups = [];
   for (const s of logged) {
     const last = groups[groups.length - 1];
-    if (last && last.w === s.weight_kg) last.reps.push(s.reps);
-    else groups.push({ w: s.weight_kg, reps: [s.reps] });
+    if (last && last.w === s.weight_kg) last.reps.push(fmt(s[valKey]));
+    else groups.push({ w: s.weight_kg, reps: [fmt(s[valKey])] });
   }
   if (groups.length === 1) {
     const g = groups[0];
-    return g.w === null || g.w === undefined || g.w === 0 ? `${g.reps.join('/')} повт.` : `${fmt(g.w)} кг × ${g.reps.join('/')}`;
+    return g.w === null || g.w === undefined || g.w === 0 ? `${g.reps.join('/')}${unit || ' повт.'}` : `${fmt(g.w)} кг × ${g.reps.join('/')}${unit}`;
   }
-  return groups.map((g) => `${fmt(g.w)} × ${g.reps.join('/')}`).join(' · ');
+  return groups.map((g) => `${fmt(g.w)} × ${g.reps.join('/')}${unit}`).join(' · ');
 }
 
 // Последняя завершённая неделя относительно сегодняшней.

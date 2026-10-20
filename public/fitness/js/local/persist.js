@@ -1,6 +1,7 @@
 // Хранение данных локального режима в IndexedDB на устройстве.
 // 'state' — текущие данные; 'snap:ГГГГ-ММ-ДД' — состояние перед первой правкой дня (последние 14 дней):
 // страховка от собственных ошибок, например неудачного импорта.
+// 'snap:ГГГГ-ММ-ДД~vN' — состояние перед обновлением данных до версии N.
 
 const DB_NAME = 'shimansky-fitness';
 const STORE = 'kv';
@@ -46,6 +47,9 @@ export async function openPersist(todayFn) {
         snapDay = day;
       }
       await op(db, 'readwrite', (s) => s.put(state, 'state'));
+    },
+    async saveSnapshot(name, state) {
+      await op(db, 'readwrite', (s) => s.put(state, `snap:${name}`));
     },
     async snapshots() {
       return (await op(db, 'readonly', (s) => s.getAllKeys())).filter((k) => String(k).startsWith('snap:')).map((k) => k.slice(5)).sort().reverse();

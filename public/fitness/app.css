@@ -122,7 +122,7 @@ textarea { width: 100%; resize: vertical; }
 .card.inset { background: var(--surface-2); border: 0; }
 .page-head { display: flex; flex-direction: column; gap: 2px; }
 .row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.banner { padding: 10px 12px; border-radius: var(--radius); margin: 0; }
+.banner { padding: 10px 12px; border-radius: var(--radius); margin: 0; background: var(--surface-2); }
 .banner.warn { background: var(--warn-bg); color: var(--warn); }
 .label { font-size: 0.85rem; color: var(--muted); margin: 12px 0 4px; }
 
@@ -287,6 +287,7 @@ details.exercises summary { cursor: pointer; color: var(--accent); padding: 6px 
 }
 .toast.show { transform: translate(-50%, 0); }
 .toast.bad { background: var(--bad); color: #fff; }
+.toast.warn { background: var(--warn); color: #fff; }
 
 /* Вход */
 .login-page { display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 16px; }

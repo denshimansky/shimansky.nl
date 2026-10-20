@@ -3,7 +3,7 @@
 import * as api from '../api.js';
 import { h, mount, sheet, toast } from '../ui.js';
 import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate } from '../shared/dates.js';
-import { dayContext, scheduledWorkoutId } from '../shared/calc.js';
+import { dayContext, scheduledWorkoutId, weeklyCardioTarget } from '../shared/calc.js';
 import { needsBackup, daysSinceBackup, saveBackup } from '../backup.js';
 
 const FIELDS = [
@@ -131,6 +131,14 @@ export async function render(container, args, app) {
     for (const s of sessions) {
       if (s.workout_id === wid || !byId(s.workout_id)) continue;
       items.push(h('a', { class: 'btn wide', href: `#/workout/${date}/${s.workout_id}` }, `${s.completed_at ? '✓ ' : ''}${byId(s.workout_id).name}`));
+    }
+    // Фаза 4: цель недели — 3 кардио по 15–20 минут.
+    const cardioTarget = weeklyCardioTarget(ctx.phase?.phase_no);
+    const cardio = workouts.find((w) => w.code === 'CARDIO');
+    if (cardioTarget && cardio) {
+      const n = data.week_cardio ?? 0;
+      items.push(h('a', { class: ['btn', 'wide', n >= cardioTarget ? 'done' : ''], href: `#/workout/${date}/${cardio.id}` },
+        `Кардио на неделе: ${Math.min(n, cardioTarget)} из ${cardioTarget}${n >= cardioTarget ? ' ✓' : ' · 15–20 мин →'}`));
     }
     items.push(h('button', { class: 'link-btn', onclick: pickWorkout }, wid ? 'Другая тренировка' : 'Тренировка вне расписания'));
     return h('div', { class: 'workout-cta' }, items);
