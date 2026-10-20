@@ -3,9 +3,11 @@
 
 import { todayIn, weekNo, weekRange } from '../shared/dates.js';
 import { weeklySummary, calorieRecommendation } from '../shared/calc.js';
-import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode, exerciseKind, repRange, subRepRange } from '../shared/validate.js';
+import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode, exerciseKind, repRange, subRepRange, calorieSourceValue, nutritionMergeValue } from '../shared/validate.js';
 import { DEFAULT_SETTINGS, DEFAULT_PHASES, DEFAULT_DELOAD_WEEKS, DEFAULT_EXERCISES, DEFAULT_WORKOUTS, DEFAULT_SCHEDULE } from '../shared/seed.js';
 import { DATA_VERSION, planPhases, keepExercise, retiredWorkout } from '../shared/migrate.js';
+import { importNutrition, mergeRules, importsView, cleanMapping, NUTRITION_COLUMNS } from '../shared/macrofactor.js';
+import { calorieSource, mfTargetFor } from '../shared/nutrition.js';
 import { TABLE_COLUMNS, toCsv } from '../shared/csv.js';
 import { importWorkbook } from '../shared/importer.js';
 
@@ -65,6 +67,16 @@ export function initialState(now = new Date().toISOString()) {
     meta: { created_at: now, last_backup_at: null, notices: [] },
   };
   installPrograms(st);
+  return ensureShape(st);
+}
+
+// Разделы, появившиеся без смены версии данных (старые копии восстанавливаются и без них).
+export function ensureShape(st) {
+  st.nutrition_daily ??= {};
+  st.nutrition_imports ??= {};
+  st.nutrition_mapping ??= {};
+  st.settings.calorie_source ??= null;
+  st.settings.nutrition_merge ??= null;
   return st;
 }
 
@@ -100,7 +112,7 @@ const byName = (a, b) => a.name.localeCompare(b.name, 'ru');
 
 // backend.state можно заменить целиком (восстановление из копии); commit() сохраняет его.
 export function createBackend(initial, { commit = async () => {}, now = () => new Date() } = {}) {
-  const b = { state: initial };
+  const b = { state: ensureShape(initial) };
   const S = () => b.state;
   const routes = [];
   const route = (method, pattern, handler) => {
@@ -178,6 +190,26 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     return ids.size;
   }
 
+  function nutritionStatus() {
+    const imports = Object.values(S().nutrition_imports);
+    const last = imports.sort((a, c) => (a.imported_at < c.imported_at ? 1 : -1))[0] || null;
+    const dates = Object.keys(S().nutrition_daily).sort();
+    return { imports: imports.length, last_import_at: last?.imported_at ?? null, data_to: dates[dates.length - 1] ?? null };
+  }
+
+  const nutritionStore = {
+    transaction: (fn) => importStore.transaction(fn),
+    mapping: () => S().nutrition_mapping,
+    nutritionGet: (date) => (S().nutrition_daily[date] ? { ...S().nutrition_daily[date] } : null),
+    nutritionPut: (row) => { S().nutrition_daily[row.date] = Object.fromEntries(NUTRITION_COLUMNS.map((c) => [c, row[c] ?? null])); },
+    dayGet: (date) => S().daily_log[date] || null,
+    dayPut(date, patch, at) {
+      const cur = S().daily_log[date] || { date, weight_kg: null, kcal: null, protein_g: null, steps: null, sleep_h: null, beer_chips: null, note: null };
+      S().daily_log[date] = { ...cur, ...patch, updated_at: at };
+    },
+    addImport: (rec) => { S().nutrition_imports[rec.id] = rec; },
+  };
+
   function ensureWeek(week) {
     if (!S().weekly_log[week]) S().weekly_log[week] = { week_no: week, waist_cm: null, planned_sessions: null, is_deload: 0 };
     return S().weekly_log[week];
@@ -241,6 +273,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     passkeys: 0,
     mail: false,
     notices: S().meta.notices || [],
+    nutrition: nutritionStatus(),
     local: {
       last_backup_at: S().meta.last_backup_at,
       created_at: S().meta.created_at,
@@ -259,6 +292,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       week: weekNo(date, S().settings.week1_start),
       sessions: Object.values(S().sessions).filter((s) => s.date === date).map(({ id, workout_id, completed_at }) => ({ id, workout_id, completed_at })),
       week_cardio: weekCardio(date),
+      mf_target: mfTargetFor(date, Object.values(S().nutrition_daily)),
     };
   });
 
@@ -351,11 +385,13 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     const rows = weeklySummary(summaryInputs());
     const currentWeek = weekNo(today(), S().settings.week1_start);
     const evalWeek = currentWeek - 1;
+    const source = calorieSource(S().settings, nutritionStatus().imports > 0);
     return {
       today: today(), currentWeek, evalWeek,
       goals: { weight_kg: S().settings.goal_weight_kg, waist_cm: S().settings.goal_waist_cm },
       rows,
-      recommendation: evalWeek >= 2 ? calorieRecommendation(rows, evalWeek) : null,
+      calorie_source: source,
+      recommendation: evalWeek >= 2 ? calorieRecommendation(rows, evalWeek, { source }) : null,
     };
   });
 
@@ -398,6 +434,8 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     }
     if ('goal_weight_kg' in body) next.goal_weight_kg = num(body.goal_weight_kg, DAILY_FIELDS.weight_kg, 'goal_weight_kg');
     if ('goal_waist_cm' in body) next.goal_waist_cm = num(body.goal_waist_cm, WAIST, 'goal_waist_cm');
+    if ('calorie_source' in body) next.calorie_source = calorieSourceValue(body.calorie_source);
+    if ('nutrition_merge' in body) next.nutrition_merge = nutritionMergeValue(body.nutrition_merge);
     S().settings = next;
     return { settings: next };
   });
@@ -518,6 +556,30 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
     }
   });
 
+  // ——— Питание (MacroFactor) ———
+  route('POST', '/nutrition/import', async ({ raw, query }) => {
+    if (!raw || raw.byteLength < 10) throw bad('Пустой файл');
+    try {
+      return { report: await importNutrition(nutritionStore, raw, { fileName: text(query.get('name'), 200), now: now().toISOString(), merge: mergeRules(S().settings) }) };
+    } catch (e) {
+      if (e instanceof HttpError) throw e;
+      throw bad(`Не удалось прочитать файл: ${e.message}`);
+    }
+  });
+
+  route('GET', '/nutrition', ({ query }) => {
+    const from = requireDate(query.get('from'));
+    const to = requireDate(query.get('to'));
+    return { days: Object.values(S().nutrition_daily).filter((d) => d.date >= from && d.date <= to).sort((a, c) => (a.date < c.date ? -1 : 1)) };
+  });
+
+  route('GET', '/nutrition/imports', () => ({ imports: importsView(Object.values(S().nutrition_imports)), mapping: { ...S().nutrition_mapping } }));
+
+  route('PUT', '/nutrition/mapping', ({ body }) => {
+    S().nutrition_mapping = { ...(body.replace ? {} : S().nutrition_mapping), ...cleanMapping(body.mapping) };
+    return { mapping: { ...S().nutrition_mapping } };
+  });
+
   // Последовательно: запись не начнётся, пока не сохранилась предыдущая.
   let chain = Promise.resolve();
 
@@ -562,6 +624,7 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
       sessions: Object.values(st.sessions).sort((a, c) => (a.date === c.date ? (a.id < c.id ? -1 : 1) : a.date < c.date ? -1 : 1)),
       set_logs: Object.values(st.set_logs).sort((a, c) => (a.session_id < c.session_id ? -1 : a.session_id > c.session_id ? 1 : a.exercise_id - c.exercise_id || a.set_no - c.set_no)),
       tests: Object.values(st.tests).sort((a, c) => a.week_no - c.week_no),
+      nutrition_daily: Object.values(st.nutrition_daily).sort((a, c) => (a.date < c.date ? -1 : 1)),
     }[table];
     return toCsv(cols, rows);
   };
@@ -574,6 +637,8 @@ export function createBackend(initial, { commit = async () => {}, now = () => ne
   };
   b.restore = async (json) => {
     const next = validateState(typeof json === 'string' ? JSON.parse(json) : json);
+    migrateState(next);
+    ensureShape(next);
     chain = chain.then(async () => {
       b.state = next;
       await commit(b.state);

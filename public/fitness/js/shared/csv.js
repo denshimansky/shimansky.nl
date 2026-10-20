@@ -1,7 +1,7 @@
 // Экспорт таблиц в CSV — одинаковые колонки на сервере и в локальном режиме.
 
 export const TABLE_COLUMNS = {
-  settings: ['id', 'week1_start', 'timezone', 'goal_weight_kg', 'goal_waist_cm'],
+  settings: ['id', 'week1_start', 'timezone', 'goal_weight_kg', 'goal_waist_cm', 'calorie_source', 'nutrition_merge'],
   phases: ['phase_no', 'name', 'week_from', 'week_to', 'kcal_target', 'protein_target_g', 'steps_target', 'pace_limit_kg'],
   daily_log: ['date', 'weight_kg', 'kcal', 'protein_g', 'steps', 'sleep_h', 'beer_chips', 'note', 'updated_at'],
   weekly_log: ['week_no', 'waist_cm', 'planned_sessions', 'is_deload'],
@@ -11,6 +11,8 @@ export const TABLE_COLUMNS = {
   schedule: ['phase_no', 'weekday', 'workout_id'],
   sessions: ['id', 'date', 'workout_id', 'notes', 'completed_at', 'source'],
   set_logs: ['session_id', 'exercise_id', 'set_no', 'weight_kg', 'reps', 'rir', 'duration_sec', 'distance_m'],
+  nutrition_daily: ['date', 'kcal', 'protein_g', 'fat_g', 'carbs_g', 'fiber_g', 'kcal_target', 'protein_target_g', 'fat_target_g', 'carbs_target_g',
+    'expenditure_kcal', 'trend_weight_kg', 'scale_weight_kg', 'steps', 'source', 'import_id'],
   tests: ['week_no', 'date', 'weight_kg', 'waist_cm', 'pullups', 'pushups', 'plank_sec', 'photo_done', 'note'],
 };
 

@@ -17,7 +17,8 @@ function plannedDate(week, settings) {
   return week === 0 ? addDays(settings.week1_start, -1) : weekRange(week, settings.week1_start).to;
 }
 
-export async function render(container, args, app) {
+// embedded — секция внутри «Прогресса» (заголовок h2 вместо шапки страницы).
+export async function render(container, args, app, { embedded = false } = {}) {
   const { settings } = app.boot;
   const { data, stale } = await api.get('tests');
   const byWeek = new Map(data.tests.map((t) => [t.week_no, t]));
@@ -81,6 +82,7 @@ export async function render(container, args, app) {
     }))) : null;
 
   mount(container,
-    h('header', { class: 'page-head' }, h('h1', null, 'Тесты'), stale ? h('span', { class: 'chip' }, 'офлайн') : null),
+    embedded ? h('h2', { class: 'section-title' }, 'Тесты · недели 0, 6, 14, 24, 32')
+      : h('header', { class: 'page-head' }, h('h1', null, 'Тесты'), stale ? h('span', { class: 'chip' }, 'офлайн') : null),
     delta, cards);
 }

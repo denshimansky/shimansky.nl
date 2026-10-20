@@ -128,7 +128,16 @@ export function weeklySummary({ settings, phases, daily, weekly = [], sessions =
 }
 
 // Расчёт 7: рекомендация по калориям по неделе evalWeek (обычно последняя завершённая).
-export function calorieRecommendation(rows, evalWeek) {
+// source = 'macrofactor': цель ведёт MacroFactor — вместо «±150 ккал» так и пишем, сигнал темпа остаётся.
+export function calorieRecommendation(rows, evalWeek, { source = 'plan' } = {}) {
+  const rec = planRecommendation(rows, evalWeek);
+  if (rec && source === 'macrofactor' && (rec.kind === 'more' || rec.kind === 'less')) {
+    return { ...rec, kind: 'macrofactor', text: 'Цель ведёт MacroFactor' };
+  }
+  return rec;
+}
+
+function planRecommendation(rows, evalWeek) {
   const at = (w) => rows.find((r) => r.week === w);
   const cur = at(evalWeek);
   if (!cur) return null;

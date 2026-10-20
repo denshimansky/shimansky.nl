@@ -72,3 +72,21 @@ export function subRepRange(min, max) {
   if ((min === null || min === undefined || min === '') && (max === null || max === undefined || max === '')) return [null, null];
   return repRange(min, max);
 }
+
+export function calorieSourceValue(v) {
+  if (v === null || v === undefined || v === '' || v === 'auto') return null;
+  if (v !== 'plan' && v !== 'macrofactor') throw bad('Источник цели калорий: plan или macrofactor');
+  return v;
+}
+
+// Правила переноса из MacroFactor в дневник → JSON-строка для настроек.
+export function nutritionMergeValue(v) {
+  if (v === null || v === undefined || v === '') return null;
+  const out = {};
+  for (const k of ['kcal', 'protein_g', 'weight_kg', 'steps']) {
+    if (v[k] === undefined) continue;
+    if (!['overwrite', 'fill', 'skip'].includes(v[k])) throw bad(`Правило для ${k}: overwrite, fill или skip`);
+    out[k] = v[k];
+  }
+  return JSON.stringify(out);
+}

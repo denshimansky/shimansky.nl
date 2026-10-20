@@ -6,8 +6,10 @@ import { WEEKDAY_NAMES, parseNum, fmtDateShort } from '../shared/dates.js';
 import { createPasskey, supported as passkeySupported } from '../passkey.js';
 import { saveBackup, downloadText, daysSinceBackup } from '../backup.js';
 import { EXERCISE_KINDS } from '../shared/seed.js';
+import { MERGE_LABELS, mergeRules } from '../shared/macrofactor.js';
+import { calorieSource } from '../shared/nutrition.js';
 
-const EXPORT_TABLES = ['daily_log', 'weekly_log', 'sessions', 'set_logs', 'tests', 'phases', 'schedule', 'workouts', 'workout_exercises', 'exercises', 'settings'];
+const EXPORT_TABLES = ['daily_log', 'nutrition_daily', 'weekly_log', 'sessions', 'set_logs', 'tests', 'phases', 'schedule', 'workouts', 'workout_exercises', 'exercises', 'settings'];
 
 const numStr = (v) => (v === null || v === undefined ? '' : String(v).replace('.', ','));
 
@@ -141,8 +143,34 @@ export async function render(container, args, app) {
   mount(container,
     h('header', { class: 'page-head' }, h('h1', null, 'Настройки')),
     api.LOCAL ? localStorageCard(app) : null,
-    datesCard, phasesCard, deloadCard, scheduleCard, programsCard, dataCard,
+    datesCard, nutritionCard(app), phasesCard, deloadCard, scheduleCard, programsCard, dataCard,
     api.LOCAL ? null : authCard(app));
+}
+
+// Питание: откуда цель калорий и как данные MacroFactor попадают в дневник.
+function nutritionCard(app) {
+  const { settings } = app.boot;
+  const imports = app.boot.nutrition?.imports || 0;
+  const src = h('select', { 'aria-label': 'Цель калорий' },
+    [['', `авто (сейчас: ${calorieSource({}, imports > 0) === 'macrofactor' ? 'из MacroFactor' : 'по плану'})`], ['plan', 'по плану'], ['macrofactor', 'из MacroFactor']]
+      .map(([v, t]) => h('option', { value: v, selected: (settings.calorie_source || '') === v }, t)));
+  const rules = mergeRules(settings);
+  const labels = { kcal: 'Калории', protein_g: 'Белок', weight_kg: 'Вес', steps: 'Шаги' };
+  const selects = Object.keys(labels).map((k) => h('label', { class: 'field' }, h('span', null, labels[k]),
+    h('select', { 'data-k': k }, Object.entries(MERGE_LABELS).map(([v, t]) => h('option', { value: v, selected: rules[k] === v }, t)))));
+  const box = h('section', { class: 'card form' },
+    h('h2', null, 'Питание (MacroFactor)'),
+    h('label', { class: 'field' }, h('span', null, 'Цель калорий'), src),
+    h('p', { class: 'muted small' }, '«Из MacroFactor» — цель дня берётся из последнего импорта, а подсказка ±150 ккал на «Прогрессе» не спорит с ней.'),
+    h('p', { class: 'label' }, 'Что переносить из MacroFactor в дневник'),
+    selects,
+    h('button', { class: 'btn primary', onclick: () => {
+      const merge = {};
+      for (const sel of box.querySelectorAll('select[data-k]')) merge[sel.dataset.k] = sel.value;
+      saveAndReload(app, 'PUT', 'settings', { calorie_source: src.value || null, nutrition_merge: merge });
+    } }, 'Сохранить'),
+    h('button', { class: 'btn small ghost', onclick: () => saveAndReload(app, 'PUT', 'nutrition/mapping', { mapping: {}, replace: true }, 'Сопоставление колонок сброшено') }, 'Сбросить сопоставление колонок'));
+  return box;
 }
 
 // Локальный режим: где лежат данные и как их не потерять.

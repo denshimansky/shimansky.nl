@@ -4,6 +4,7 @@ import * as api from '../api.js';
 import { h, mount, sheet, toast } from '../ui.js';
 import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate } from '../shared/dates.js';
 import { dayContext, scheduledWorkoutId, weeklyCardioTarget } from '../shared/calc.js';
+import { calorieSource, effectiveTargets } from '../shared/nutrition.js';
 import { needsBackup, daysSinceBackup, saveBackup } from '../backup.js';
 
 const FIELDS = [
@@ -22,6 +23,8 @@ export async function render(container, args, app) {
   const deload = weekly.some((w) => w.week_no === ctx.week && w.is_deload);
 
   const { data, stale } = await api.get(`day/${date}`);
+  // Цель калорий (и белка, если есть) — из MacroFactor, если так выбрано в «Настройках».
+  ctx.targets = effectiveTargets(ctx.targets, calorieSource(settings, (app.boot.nutrition?.imports || 0) > 0), data.mf_target);
   const log = { ...data.log };
   for (const op of api.pending()) if (op.method === 'PATCH' && op.path === `day/${date}`) Object.assign(log, op.body);
 
@@ -96,7 +99,7 @@ export async function render(container, args, app) {
     if (target) {
       const ratio = v ? v / target : 0;
       const state = v === null || v === undefined ? '' : f.dir === 'max' ? (v <= target ? 'good' : 'warn') : v >= target ? 'good' : '';
-      sub = h('span', { class: 'muted' }, `цель ${fmtNum(target, 0)}`);
+      sub = h('span', { class: 'muted' }, `цель ${fmtNum(target, 0)}${ctx.targets.source === 'macrofactor' && f.key !== 'steps' ? ' · MF' : ''}`);
       bar = h('div', { class: 'bar' }, h('div', { class: `bar-fill ${state}`, style: { width: `${Math.min(100, ratio * 100)}%` } }));
     } else if (f.key === 'weight_kg' && data.prev_weight) {
       const d = v !== null && v !== undefined ? v - data.prev_weight.weight_kg : null;

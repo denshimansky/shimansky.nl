@@ -1,16 +1,19 @@
 // Линейный график по неделям 0…N на SVG: точки данных, пунктир цели, подписи осей.
+// Несколько линий: series = [{ points, cls, label }] — первая главная (подпись последнего значения).
 
 import { s } from './ui.js';
 import { fmtNum } from './shared/dates.js';
 
-export function weekChart({ points, goal = null, maxWeek = 32, digits = 1, unit = '', label }) {
+export function weekChart({ points, series = null, goal = null, maxWeek = 32, digits = 1, unit = '', label }) {
   const W = 340;
   const H = 180;
   const pad = { l: 36, r: 10, t: 12, b: 24 };
-  const vals = points.filter((p) => p.y !== null && p.y !== undefined);
-  const ys = vals.map((p) => p.y);
+  const lines = series || [{ points, cls: '' }];
+  const has = (p) => p.y !== null && p.y !== undefined;
+  const vals = lines[0].points.filter(has);
+  const ys = lines.flatMap((l) => l.points.filter(has).map((p) => p.y));
   if (goal !== null && goal !== undefined) ys.push(goal);
-  if (!vals.length) {
+  if (!ys.length) {
     return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': `${label}: нет данных` },
       s('text', { x: W / 2, y: H / 2, 'text-anchor': 'middle', class: 'chart-empty' }, 'Пока нет данных'));
   }
@@ -31,22 +34,28 @@ export function weekChart({ points, goal = null, maxWeek = 32, digits = 1, unit 
     s('text', { x: x(w), y: H - 6, 'text-anchor': 'middle', class: 'chart-tick' }, String(w)));
 
   // Линия рвётся на неделях без данных.
-  const segments = [];
-  let cur = [];
-  for (const p of points) {
-    if (p.y === null || p.y === undefined) { if (cur.length) segments.push(cur); cur = []; continue; }
-    cur.push(`${x(p.week).toFixed(1)},${y(p.y).toFixed(1)}`);
-  }
-  if (cur.length) segments.push(cur);
+  const draw = ({ points: pts, cls = '', label: name }) => {
+    const segments = [];
+    let cur = [];
+    for (const p of pts) {
+      if (!has(p)) { if (cur.length) segments.push(cur); cur = []; continue; }
+      cur.push(`${x(p.week).toFixed(1)},${y(p.y).toFixed(1)}`);
+    }
+    if (cur.length) segments.push(cur);
+    return [
+      segments.map((seg) => s('polyline', { points: seg.join(' '), class: ['chart-line', cls].filter(Boolean).join(' ') })),
+      pts.filter(has).map((p) => s('circle', { cx: x(p.week), cy: y(p.y), r: 2.6, class: ['chart-dot', cls].filter(Boolean).join(' ') },
+        s('title', null, `${name ? `${name}, н` : 'Н'}еделя ${p.week}: ${fmtNum(p.y, digits)} ${unit}`))),
+    ];
+  };
 
   const last = vals[vals.length - 1];
-  return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': `${label}: последнее значение ${fmtNum(last.y, digits)} ${unit} на неделе ${last.week}` },
+  return s('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': last ? `${label}: последнее значение ${fmtNum(last.y, digits)} ${unit} на неделе ${last.week}` : label },
     grid, xTicks,
     goal !== null && goal !== undefined ? [
       s('line', { x1: pad.l, x2: W - pad.r, y1: y(goal), y2: y(goal), class: 'chart-goal' }),
       s('text', { x: W - pad.r, y: y(goal) - 4, 'text-anchor': 'end', class: 'chart-goal-label' }, `цель ${fmtNum(goal, digits)}`),
     ] : null,
-    segments.map((seg) => s('polyline', { points: seg.join(' '), class: 'chart-line' })),
-    vals.map((p) => s('circle', { cx: x(p.week), cy: y(p.y), r: 2.6, class: 'chart-dot' }, s('title', null, `Неделя ${p.week}: ${fmtNum(p.y, digits)} ${unit}`))),
-    s('text', { x: x(last.week), y: y(last.y) - 7, 'text-anchor': 'middle', class: 'chart-last' }, fmtNum(last.y, digits)));
+    [...lines].reverse().map(draw),
+    last ? s('text', { x: x(last.week), y: y(last.y) - 7, 'text-anchor': 'middle', class: 'chart-last' }, fmtNum(last.y, digits)) : null);
 }

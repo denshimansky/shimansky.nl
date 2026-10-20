@@ -5,6 +5,7 @@ import { h, mount, sheet, toast } from '../ui.js';
 import { weekChart } from '../chart.js';
 import { fmtNum, fmtSigned, fmtDateShort, parseNum, weekdayShort } from '../shared/dates.js';
 import { SIGNAL_LABELS, TOTAL_WEEKS } from '../shared/calc.js';
+import * as tests from './tests.js';
 
 export async function render(container, args, app) {
   const { data, stale } = await api.get('progress');
@@ -99,7 +100,11 @@ export async function render(container, args, app) {
         h('td', null, fmtNum(r.waist_cm, 1)), h('td', null, `${r.done_sessions}/${r.planned_sessions}`)))))),
     h('p', { class: 'muted small' }, 'Нажмите на неделю, чтобы увидеть её дни.'));
 
+  const testsBox = h('section', { id: 'tests', class: 'tests-section' });
+  await tests.render(testsBox, [], app, { embedded: true });
+
   mount(container,
     h('header', { class: 'page-head' }, h('h1', null, 'Прогресс'), stale ? h('span', { class: 'chip' }, 'офлайн') : null),
-    recBox, now, charts, table);
+    recBox, now, charts, table, testsBox);
+  if (args[0] === 'tests') requestAnimationFrame(() => testsBox.scrollIntoView({ block: 'start' }));
 }

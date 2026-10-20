@@ -3,18 +3,20 @@ import { h, mount, icon, toast } from './ui.js';
 import { todayIn } from './shared/dates.js';
 import * as today from './views/today.js';
 import * as workout from './views/workout.js';
+import * as nutrition from './views/nutrition.js';
 import * as progress from './views/progress.js';
-import * as tests from './views/tests.js';
 import * as settings from './views/settings.js';
 
-const VIEWS = { today, workout, progress, tests, settings };
+const VIEWS = { today, workout, nutrition, progress, settings };
 const NAV = [
   ['today', 'Сегодня'],
   ['workout', 'Тренировка'],
+  ['nutrition', 'Питание'],
   ['progress', 'Прогресс'],
-  ['tests', 'Тесты'],
   ['settings', 'Настройки'],
 ];
+// Старые адреса: «Тесты» теперь секция «Прогресса».
+const REDIRECTS = { tests: '#/progress/tests' };
 
 export const app = {
   boot: null,
@@ -38,6 +40,10 @@ const statusEl = document.getElementById('status');
 
 function parseRoute() {
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  if (REDIRECTS[parts[0]]) {
+    history.replaceState(null, '', REDIRECTS[parts[0]]);
+    return parseRoute();
+  }
   const name = VIEWS[parts[0]] ? parts[0] : 'today';
   return { name, args: VIEWS[parts[0]] ? parts.slice(1) : [] };
 }
