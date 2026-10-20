@@ -1,15 +1,15 @@
 // Локальный режим: те же адреса и ответы, что у серверного API (src/api.js),
 // но данные лежат в объекте state, который js/local/persist.js хранит в IndexedDB на устройстве.
 
-import { todayIn, weekNo, weekRange, addDays } from '../shared/dates.js';
-import { weeklySummary, calorieRecommendation } from '../shared/calc.js';
-import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode, exerciseKind, repRange, subRepRange, calorieSourceValue, nutritionMergeValue } from '../shared/validate.js';
-import { DEFAULT_SETTINGS, DEFAULT_PHASES, DEFAULT_DELOAD_WEEKS, DEFAULT_EXERCISES, DEFAULT_WORKOUTS, DEFAULT_SCHEDULE } from '../shared/seed.js';
-import { DATA_VERSION, DEFAULT_GOAL_WEIGHT, planPhases, keepExercise, retiredWorkout } from '../shared/migrate.js';
-import { importNutrition, mergeRules, importsView, cleanMapping, NUTRITION_COLUMNS } from '../shared/macrofactor.js';
-import { calorieSource, mfTargetFor } from '../shared/nutrition.js';
-import { TABLE_COLUMNS, toCsv } from '../shared/csv.js';
-import { importWorkbook } from '../shared/importer.js';
+import { todayIn, weekNo, weekRange, addDays } from '../shared/dates.js?v=d67a901a70f5';
+import { weeklySummary, calorieRecommendation } from '../shared/calc.js?v=d67a901a70f5';
+import { HttpError, bad, DAILY_FIELDS, WAIST, num, intOrNull, text, requireDate, beerChips, workoutCode, exerciseKind, repRange, subRepRange, calorieSourceValue, nutritionMergeValue } from '../shared/validate.js?v=d67a901a70f5';
+import { DEFAULT_SETTINGS, DEFAULT_PHASES, DEFAULT_DELOAD_WEEKS, DEFAULT_EXERCISES, DEFAULT_WORKOUTS, DEFAULT_SCHEDULE } from '../shared/seed.js?v=d67a901a70f5';
+import { DATA_VERSION, DEFAULT_GOAL_WEIGHT, planPhases, keepExercise, retiredWorkout } from '../shared/migrate.js?v=d67a901a70f5';
+import { importNutrition, mergeRules, importsView, cleanMapping, NUTRITION_COLUMNS } from '../shared/macrofactor.js?v=d67a901a70f5';
+import { calorieSource, mfTargetFor } from '../shared/nutrition.js?v=d67a901a70f5';
+import { TABLE_COLUMNS, toCsv } from '../shared/csv.js?v=d67a901a70f5';
+import { importWorkbook } from '../shared/importer.js?v=d67a901a70f5';
 
 export const STATE_FORMAT = 'shimansky-fitness';
 

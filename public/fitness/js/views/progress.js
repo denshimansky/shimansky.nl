@@ -1,11 +1,11 @@
 // Экран «Прогресс»: рекомендация по калориям, графики веса и талии, таблица недель.
 
-import * as api from '../api.js';
-import { h, mount, sheet, toast } from '../ui.js';
-import { weekChart } from '../chart.js';
-import { fmtNum, fmtSigned, fmtDateShort, parseNum, weekdayShort } from '../shared/dates.js';
-import { SIGNAL_LABELS, TOTAL_WEEKS } from '../shared/calc.js';
-import * as tests from './tests.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, sheet, toast } from '../ui.js?v=d67a901a70f5';
+import { weekChart } from '../chart.js?v=d67a901a70f5';
+import { fmtNum, fmtSigned, fmtDateShort, parseNum, weekdayShort } from '../shared/dates.js?v=d67a901a70f5';
+import { SIGNAL_LABELS, TOTAL_WEEKS } from '../shared/calc.js?v=d67a901a70f5';
+import * as tests from './tests.js?v=d67a901a70f5';
 
 export async function render(container, args, app) {
   const { data, stale } = await api.get('progress');

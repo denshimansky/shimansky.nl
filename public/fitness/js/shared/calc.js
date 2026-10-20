@@ -1,7 +1,7 @@
 // Расчёты трекера (раздел «Расчёты» брифа). Чистые функции без доступа к БД:
 // один и тот же код работает на сервере, в браузере и в тестах.
 
-import { weekNo, weekRange, isoWeekday } from './dates.js';
+import { weekNo, weekRange, isoWeekday } from './dates.js?v=d67a901a70f5';
 
 export const TOTAL_WEEKS = 32;
 export const TEST_WEEKS = [0, 6, 14, 24, 32];

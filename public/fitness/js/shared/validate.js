@@ -1,7 +1,7 @@
 // Проверка входных данных — общая для сервера и для локального режима в браузере.
 
-import { isIsoDate, parseNum } from './dates.js';
-import { EXERCISE_KINDS } from './seed.js';
+import { isIsoDate, parseNum } from './dates.js?v=d67a901a70f5';
+import { EXERCISE_KINDS } from './seed.js?v=d67a901a70f5';
 
 export class HttpError extends Error {
   constructor(status, message) {

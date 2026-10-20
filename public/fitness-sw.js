@@ -1,9 +1,9 @@
 // Service worker: оболочка приложения работает без сети. Данные API кэширует сам клиент (js/api.js).
 // VERSION, BASE и ASSETS подставляет сервер при отдаче файла.
 
-const VERSION = "b87626039c09";
+const VERSION = "d67a901a70f5";
 const BASE = "/fitness";
-const ASSETS = ["app.css","icons/icon-180.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg","js/api.js","js/app.js","js/backup.js","js/chart.js","js/local/backend.js","js/local/persist.js","js/motion.js","js/passkey.js","js/shared/calc.js","js/shared/csv.js","js/shared/dates.js","js/shared/importer.js","js/shared/macrofactor.js","js/shared/migrate.js","js/shared/nutrition.js","js/shared/seed.js","js/shared/validate.js","js/shared/xlsx.js","js/ui.js","js/views/checkin.js","js/views/nutrition.js","js/views/progress.js","js/views/settings.js","js/views/tests.js","js/views/today.js","js/views/workout.js","manifest.webmanifest"];
+const ASSETS = ["app.css","icons/icon-180.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg","js/api.js","js/app.js","js/backup.js","js/boot-guard.js","js/chart.js","js/local/backend.js","js/local/persist.js","js/motion.js","js/passkey.js","js/shared/calc.js","js/shared/csv.js","js/shared/dates.js","js/shared/importer.js","js/shared/macrofactor.js","js/shared/migrate.js","js/shared/nutrition.js","js/shared/seed.js","js/shared/validate.js","js/shared/xlsx.js","js/ui.js","js/views/checkin.js","js/views/nutrition.js","js/views/progress.js","js/views/settings.js","js/views/tests.js","js/views/today.js","js/views/workout.js","manifest.webmanifest"];
 const CACHE = `fit-${VERSION}`;
 const APP = BASE || '/';
 const SHELL = 'shell';
@@ -11,7 +11,9 @@ const SHELL = 'shell';
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    await cache.addAll(ASSETS.map((a) => `${BASE}/${a}`));
+    // cache: 'reload' — мимо HTTP-кэша браузера: иначе Safari кладёт в новую версию старые модули
+    // (адреса js/*.js одинаковые во всех версиях), и приложение не запускается.
+    await cache.addAll(ASSETS.map((a) => new Request(`${BASE}/${a}`, { cache: 'reload' })));
     const shell = await fetch(APP, { credentials: 'same-origin', cache: 'no-store' });
     if (shell.ok && !shell.redirected) await cache.put(SHELL, shell);
     await self.skipWaiting();
@@ -40,8 +42,10 @@ self.addEventListener('fetch', (event) => {
     // свежая версия подтягивается в фоне. Без сохранённой оболочки — сеть (там редирект на вход).
     event.respondWith((async () => {
       const cache = await caches.open(CACHE);
-      const network = fetch(req).then((res) => {
-        if (res.ok && !res.redirected) cache.put(SHELL, res.clone());
+      // Свежую оболочку кладём в кэш, только если она этой же версии: оболочка новой версии
+      // со старыми модулями из этого кэша не запустится. Новую версию принесёт новый service worker.
+      const network = fetch(req).then(async (res) => {
+        if (res.ok && !res.redirected && (await res.clone().text()).includes(`?v=${VERSION}`)) await cache.put(SHELL, res.clone());
         return res;
       });
       const hit = await cache.match(SHELL);
@@ -58,8 +62,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Файлы — только из кэша своей версии: модули разных версий не смешиваются.
   event.respondWith((async () => {
-    const hit = await caches.match(req, { ignoreSearch: true });
+    const hit = await (await caches.open(CACHE)).match(req, { ignoreSearch: true });
     if (hit) return hit;
     return fetch(req);
   })());

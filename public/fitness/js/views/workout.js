@@ -1,9 +1,9 @@
 // Экран «Тренировка»: упражнения дня, прошлые веса, подсказка прибавки, запись подходов, таймер отдыха.
 
-import * as api from '../api.js';
-import { h, mount, toast } from '../ui.js';
-import { fmtDateLong, fmtDateShort, fmtNum, parseNum, isIsoDate } from '../shared/dates.js';
-import { dayContext, scheduledWorkoutId, progression, formatSets, formatScheme, prescribedSets, hasFinisher, FINISHER } from '../shared/calc.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, toast } from '../ui.js?v=d67a901a70f5';
+import { fmtDateLong, fmtDateShort, fmtNum, parseNum, isIsoDate } from '../shared/dates.js?v=d67a901a70f5';
+import { dayContext, scheduledWorkoutId, progression, formatSets, formatScheme, prescribedSets, hasFinisher, FINISHER } from '../shared/calc.js?v=d67a901a70f5';
 
 const RIR_OPTIONS = [0, 1, 2, 3, 4];
 

@@ -1,11 +1,11 @@
 // Экран «Сегодня»: ежедневный ввод за 30 секунд.
 
-import * as api from '../api.js';
-import { h, mount, sheet, toast, swipePager } from '../ui.js';
-import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate, isoWeekday } from '../shared/dates.js';
-import { dayContext, scheduledWorkoutId, weeklyCardioTarget } from '../shared/calc.js';
-import { calorieSource, effectiveTargets, beerLimit } from '../shared/nutrition.js';
-import { needsBackup, daysSinceBackup, saveBackup } from '../backup.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, sheet, toast, swipePager } from '../ui.js?v=d67a901a70f5';
+import { addDays, fmtDateLong, fmtNum, fmtSigned, parseNum, diffDays, isIsoDate, isoWeekday } from '../shared/dates.js?v=d67a901a70f5';
+import { dayContext, scheduledWorkoutId, weeklyCardioTarget } from '../shared/calc.js?v=d67a901a70f5';
+import { calorieSource, effectiveTargets, beerLimit } from '../shared/nutrition.js?v=d67a901a70f5';
+import { needsBackup, daysSinceBackup, saveBackup } from '../backup.js?v=d67a901a70f5';
 
 const FIELDS = [
   { key: 'weight_kg', label: 'Вес', unit: 'кг', digits: 1, mode: 'decimal', min: 30, max: 300 },

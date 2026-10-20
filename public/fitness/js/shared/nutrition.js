@@ -1,7 +1,7 @@
 // Расчёты экрана «Питание» и цели калорий из MacroFactor. Чистые функции — для сервера, браузера и тестов.
 
-import { weekNo, weekRange, addDays } from './dates.js';
-import { phaseForWeek, TOTAL_WEEKS } from './calc.js';
+import { weekNo, weekRange, addDays } from './dates.js?v=d67a901a70f5';
+import { phaseForWeek, TOTAL_WEEKS } from './calc.js?v=d67a901a70f5';
 
 export const KCAL_PER_KG = 7700;
 export const PROTEIN_SLACK_G = 10;

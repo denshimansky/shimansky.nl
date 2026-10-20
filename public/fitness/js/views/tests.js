@@ -1,9 +1,9 @@
 // Экран «Тесты»: недели 0, 6, 14, 24, 32 и изменение от старта.
 
-import * as api from '../api.js';
-import { h, mount, sheet, toast } from '../ui.js';
-import { fmtNum, fmtSigned, fmtDateShort, addDays, weekRange, parseNum, isIsoDate } from '../shared/dates.js';
-import { TEST_WEEKS } from '../shared/calc.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, sheet, toast } from '../ui.js?v=d67a901a70f5';
+import { fmtNum, fmtSigned, fmtDateShort, addDays, weekRange, parseNum, isIsoDate } from '../shared/dates.js?v=d67a901a70f5';
+import { TEST_WEEKS } from '../shared/calc.js?v=d67a901a70f5';
 
 const METRICS = [
   { key: 'weight_kg', label: 'Вес', unit: 'кг', digits: 1, better: -1 },

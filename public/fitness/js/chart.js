@@ -1,8 +1,8 @@
 // Линейный график по неделям 0…N на SVG: точки данных, пунктир цели, подписи осей.
 // Несколько линий: series = [{ points, cls, label }] — первая главная (подпись последнего значения).
 
-import { s } from './ui.js';
-import { fmtNum } from './shared/dates.js';
+import { s } from './ui.js?v=d67a901a70f5';
+import { fmtNum } from './shared/dates.js?v=d67a901a70f5';
 
 export function weekChart({ points, series = null, goal = null, maxWeek = 32, digits = 1, unit = '', label }) {
   const W = 340;

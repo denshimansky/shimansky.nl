@@ -1,11 +1,11 @@
 // Воскресный чек-ин: талия → фото (каждые 4 недели) → итоги недели → копия данных → «пройден».
 
-import * as api from '../api.js';
-import { h, mount, toast } from '../ui.js';
-import { addDays, fmtDateShort, fmtNum, fmtSigned, parseNum, weekNo, weekRange } from '../shared/dates.js';
-import { SIGNAL_LABELS } from '../shared/calc.js';
-import { calorieSource, nutritionWeek, beerLimit } from '../shared/nutrition.js';
-import { saveBackup } from '../backup.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, toast } from '../ui.js?v=d67a901a70f5';
+import { addDays, fmtDateShort, fmtNum, fmtSigned, parseNum, weekNo, weekRange } from '../shared/dates.js?v=d67a901a70f5';
+import { SIGNAL_LABELS } from '../shared/calc.js?v=d67a901a70f5';
+import { calorieSource, nutritionWeek, beerLimit } from '../shared/nutrition.js?v=d67a901a70f5';
+import { saveBackup } from '../backup.js?v=d67a901a70f5';
 
 const PHOTO_EVERY = 4;
 

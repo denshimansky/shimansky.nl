@@ -1,12 +1,12 @@
-import * as api from './api.js';
-import { h, mount, icon, toast, enterFrom } from './ui.js';
-import { todayIn } from './shared/dates.js';
-import * as today from './views/today.js';
-import * as workout from './views/workout.js';
-import * as nutrition from './views/nutrition.js';
-import * as progress from './views/progress.js';
-import * as settings from './views/settings.js';
-import * as checkin from './views/checkin.js';
+import * as api from './api.js?v=d67a901a70f5';
+import { h, mount, icon, toast, enterFrom } from './ui.js?v=d67a901a70f5';
+import { todayIn } from './shared/dates.js?v=d67a901a70f5';
+import * as today from './views/today.js?v=d67a901a70f5';
+import * as workout from './views/workout.js?v=d67a901a70f5';
+import * as nutrition from './views/nutrition.js?v=d67a901a70f5';
+import * as progress from './views/progress.js?v=d67a901a70f5';
+import * as settings from './views/settings.js?v=d67a901a70f5';
+import * as checkin from './views/checkin.js?v=d67a901a70f5';
 
 const VIEWS = { today, workout, nutrition, progress, settings, checkin };
 const NAV = [
@@ -105,6 +105,8 @@ document.addEventListener('click', (e) => {
 });
 
 async function start() {
+  // Модули загрузились — страховка js/boot-guard.js больше не нужна.
+  window.__fitStarted = true;
   buildNav();
   api.onChange((st) => {
     renderStatus(st);

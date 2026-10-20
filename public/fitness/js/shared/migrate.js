@@ -2,7 +2,7 @@
 // v2 — фазы, справочник и программы из «Плана формы к лету 2027»; v3 — целевой вес 77 кг, если не задан.
 // Применяют их src/migrate.js (SQLite) и js/local/backend.js (state в IndexedDB).
 
-import { DEFAULT_PHASES, LEGACY_PHASES, PHASE_FIELDS, DEFAULT_EXERCISES } from './seed.js';
+import { DEFAULT_PHASES, LEGACY_PHASES, PHASE_FIELDS, DEFAULT_EXERCISES } from './seed.js?v=d67a901a70f5';
 
 export const DATA_VERSION = 3;
 export const DEFAULT_GOAL_WEIGHT = 77;

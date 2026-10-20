@@ -5,8 +5,8 @@
 //   transaction(fn), nutritionGet(date), nutritionPut(row), dayGet(date), dayPut(date, patch, now),
 //   mapping(), addImport(rec), settings().
 
-import { readXlsx, excelSerialToIso } from './xlsx.js';
-import { isIsoDate, parseNum } from './dates.js';
+import { readXlsx, excelSerialToIso } from './xlsx.js?v=d67a901a70f5';
+import { isIsoDate, parseNum } from './dates.js?v=d67a901a70f5';
 
 // Поле трекера → подпись (для экрана сопоставления) и синонимы заголовка (без единиц, в нижнем регистре).
 export const NUTRITION_FIELDS = {

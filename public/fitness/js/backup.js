@@ -1,8 +1,8 @@
 // Резервные копии локального режима: файл JSON со всеми данными.
 // На телефоне — через меню «Поделиться» (можно сохранить в «Файлы» / iCloud Drive), иначе — обычной загрузкой.
 
-import * as api from './api.js';
-import { todayIn } from './shared/dates.js';
+import * as api from './api.js?v=d67a901a70f5';
+import { todayIn } from './shared/dates.js?v=d67a901a70f5';
 
 export function downloadText(filename, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }));

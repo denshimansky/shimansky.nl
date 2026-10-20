@@ -1,11 +1,11 @@
 // Экран «Питание»: импорт экспорта MacroFactor, неделя, графики по неделям, пиво/чипсы, последние 14 дней.
 
-import * as api from '../api.js';
-import { h, mount, sheet, toast } from '../ui.js';
-import { weekChart } from '../chart.js';
-import { addDays, diffDays, fmtDateShort, fmtNum, fmtSigned, weekNo, weekRange, weekdayShort } from '../shared/dates.js';
-import { dayContext, TOTAL_WEEKS } from '../shared/calc.js';
-import { calorieSource, nutritionWeek, nutritionWeekly, beerEffect, beerWeek } from '../shared/nutrition.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, sheet, toast } from '../ui.js?v=d67a901a70f5';
+import { weekChart } from '../chart.js?v=d67a901a70f5';
+import { addDays, diffDays, fmtDateShort, fmtNum, fmtSigned, weekNo, weekRange, weekdayShort } from '../shared/dates.js?v=d67a901a70f5';
+import { dayContext, TOTAL_WEEKS } from '../shared/calc.js?v=d67a901a70f5';
+import { calorieSource, nutritionWeek, nutritionWeekly, beerEffect, beerWeek } from '../shared/nutrition.js?v=d67a901a70f5';
 
 const STALE_DAYS = 7;
 let lastReport = null;

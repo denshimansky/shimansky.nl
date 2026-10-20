@@ -1,13 +1,13 @@
 // «Настройки»: даты и цели, фазы, разгрузки, расписание, программы, импорт/экспорт, вход.
 
-import * as api from '../api.js';
-import { h, mount, toast } from '../ui.js';
-import { WEEKDAY_NAMES, parseNum, fmtDateShort } from '../shared/dates.js';
-import { createPasskey, supported as passkeySupported } from '../passkey.js';
-import { saveBackup, downloadText, daysSinceBackup } from '../backup.js';
-import { EXERCISE_KINDS } from '../shared/seed.js';
-import { MERGE_LABELS, mergeRules } from '../shared/macrofactor.js';
-import { calorieSource } from '../shared/nutrition.js';
+import * as api from '../api.js?v=d67a901a70f5';
+import { h, mount, toast } from '../ui.js?v=d67a901a70f5';
+import { WEEKDAY_NAMES, parseNum, fmtDateShort } from '../shared/dates.js?v=d67a901a70f5';
+import { createPasskey, supported as passkeySupported } from '../passkey.js?v=d67a901a70f5';
+import { saveBackup, downloadText, daysSinceBackup } from '../backup.js?v=d67a901a70f5';
+import { EXERCISE_KINDS } from '../shared/seed.js?v=d67a901a70f5';
+import { MERGE_LABELS, mergeRules } from '../shared/macrofactor.js?v=d67a901a70f5';
+import { calorieSource } from '../shared/nutrition.js?v=d67a901a70f5';
 
 const EXPORT_TABLES = ['daily_log', 'nutrition_daily', 'weekly_log', 'sessions', 'set_logs', 'tests', 'phases', 'schedule', 'workouts', 'workout_exercises', 'exercises', 'settings'];
 

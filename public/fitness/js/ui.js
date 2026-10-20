@@ -1,6 +1,6 @@
 // Мини-хелперы DOM: h() для элементов, s() для SVG, тосты, нижняя шторка ввода и листание.
 
-import { spring, velocityTracker, project, rubberband, reducedMotion, HYSTERESIS } from './motion.js';
+import { spring, velocityTracker, project, rubberband, reducedMotion, HYSTERESIS } from './motion.js?v=d67a901a70f5';
 
 export function h(tag, props, ...children) {
   const el = document.createElement(tag);

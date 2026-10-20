@@ -4,7 +4,7 @@
 // • серверный: сеть, при ошибке — последний ответ из localStorage; запись сначала ложится в очередь
 //   (outbox) и отправляется по порядку. Записи идемпотентны (PUT/PATCH по ключу), повтор безопасен.
 
-import { todayIn } from './shared/dates.js';
+import { todayIn } from './shared/dates.js?v=d67a901a70f5';
 
 // База приложения из <base href> (…/fitness/): так пути верны и на /fitness, и на /fitness/.
 const BASE = new URL(document.baseURI);
@@ -39,7 +39,7 @@ export let persisted = null;
 export async function ready() {
   if (!LOCAL || backend) return;
   const [{ createBackend, initialState, migrateState }, { openPersist, requestPersistence }] = await Promise.all([
-    import('./local/backend.js'), import('./local/persist.js'),
+    import('./local/backend.js?v=d67a901a70f5'), import('./local/persist.js?v=d67a901a70f5'),
   ]);
   let state = null;
   try {

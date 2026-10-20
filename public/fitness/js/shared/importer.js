@@ -9,9 +9,9 @@
 //   putImportSession(id, date, workoutId, completedAt), clearSets(sessionId),
 //   putSet(sessionId, exerciseId, setNo, weight, reps, rir), mergeTest(rec).
 
-import { readXlsx, excelSerialToIso } from './xlsx.js';
-import { weeklySummary, scheduledWorkoutId, SIGNAL_LABELS } from './calc.js';
-import { isIsoDate, parseNum } from './dates.js';
+import { readXlsx, excelSerialToIso } from './xlsx.js?v=d67a901a70f5';
+import { weeklySummary, scheduledWorkoutId, SIGNAL_LABELS } from './calc.js?v=d67a901a70f5';
+import { isIsoDate, parseNum } from './dates.js?v=d67a901a70f5';
 
 const norm = (s) => String(s ?? '').toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
 
