@@ -22,25 +22,6 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #141414;
-    --surface: #1e1e1e;
-    --surface-2: #2a2a2a;
-    --text: #f0efec;
-    --muted: #a19f99;
-    --line: #34332f;
-    --accent: #6ea2ff;
-    --accent-text: #0d1a33;
-    --good: #5fcf8d;
-    --warn: #f0a94a;
-    --bad: #ff7b6b;
-    --good-bg: #173324;
-    --warn-bg: #3a2a12;
-    --bad-bg: #3d1c18;
-    color-scheme: dark;
-  }
-}
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
